@@ -1,21 +1,23 @@
+import os
 import xml.etree.ElementTree as elementTree
 import textwrap
 from os import listdir
 from os.path import isfile, join
+import webbrowser
 
-from python.items.container import Container
-from python.items.enemy import Enemy
-from python.items.food import Food
-from python.items.object import Object
-from python.items.weapon import Weapon
-from python.map.direction import Direction, get_index
-from python.map.scene import Scene
+from items.container import Container
+from items.enemy import Enemy
+from items.food import Food
+from items.object import Object
+from items.weapon import Weapon
+from movement.direction import Direction, get_index
+from movement.scene import Scene
 
 
 def get_map(path):
-    athora_map = elementTree.parse(path)
+    game_map = elementTree.parse(path)
 
-    root = athora_map.getroot()
+    root = game_map.getroot()
     map_name = root.attrib.get("name")
     map_splash = textwrap.dedent(root.find("splash").text)
 
@@ -77,13 +79,23 @@ def get_map(path):
 
 
 def choose_map():
+    maps_dir = "./maps/"
+
+    if not os.path.isdir(maps_dir):
+        print("No maps folder was found. Creating one...")
+        os.mkdir(maps_dir)
+
     while True:
-        files = [f for f in listdir('maps') if isfile(join('maps', f))]
+        files = [f for f in listdir(maps_dir) if isfile(join(maps_dir, f))]
+        if len(files) < 1:
+            print("The maps folder is empty. Please add some maps.")
+            webbrowser.open(os.path.realpath(maps_dir))
+            return
         print("Please choose which map you would like to play:")
         for file in files:
             if file.lower().endswith(".athora"):
-                athora_map = elementTree.parse(f'maps/{file}')
-                print(f'{files.index(file)}: {athora_map.getroot().attrib.get("name")} ({file})')
+                game_map = elementTree.parse(f'{maps_dir}{file}')
+                print(f'{files.index(file)}: {game_map.getroot().attrib.get("name")} ({file})')
 
         u_input = input('> ')
 
@@ -93,7 +105,7 @@ def choose_map():
                 print("That is not an option in the list of maps.")
                 continue
             else:
-                return "maps/" + files[val]
+                return maps_dir + files[val]
         except ValueError:
             print("Enter a valid number")
             continue

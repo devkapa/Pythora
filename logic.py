@@ -1,9 +1,14 @@
-from map.map import Map
+import colorama
+
+from movement.map import Map
 from player.player import Player
-from python.items.container import Container
-from python.items.enemy import Enemy
-from python.items.object import Object
-from python.map.direction import get_index, Direction
+from items.container import Container
+from items.enemy import Enemy
+from items.object import Object
+from movement.direction import get_index, Direction
+from colorama import Fore
+
+colorama.init()
 
 health = 10
 inventory: list[Object] = []
@@ -11,27 +16,34 @@ inventory: list[Object] = []
 global_map: Map
 
 
-def start_game(athora_map: Map):
+def start_game(game_map: Map):
     global global_map
-    global_map = athora_map
+    global_map = game_map
 
-    if athora_map is None:
+    if game_map is None:
         print("Error initialising map.")
         return
 
-    player = Player(health, inventory, global_map.scenes[7])
+    player = Player(health, inventory, global_map.scenes[0])
 
-    print(athora_map.get_splash())
+    print(game_map.get_splash())
 
     print(look(player))
 
     while player.get_health() > 0:
-        u_input = input('> ')
+
+        print("> " + Fore.GREEN, end="")
+        u_input = input()
+
+        print(Fore.RESET, end="")
+
         command = u_input.lower().strip()
         verb = get_verb(command)
+
         if verb is None:
             print(f"I don't know what you mean by \"{command}\".")
             continue
+
         args = command.replace(verb, "").strip()
 
         match verb:
@@ -131,8 +143,9 @@ verbs = ["quit", "go", "take", "pick", "pickup", "drop", "open", "move", "invent
          "stab", "hit", "murder", "items", "walk", "rid", "eat", "consume", "drink", "hp", "health",
          "exit", "stop", "put", "place", "insert", "remove"]
 
-deathMessage = """
+deathMessage = f"""
                 
-                **Poof! You have died.**
-            Please restart the game to play again.
+                {Fore.RED}**Poof! You have died.**
+            {Fore.RESET}Please restart the game to play again.
+            
             """

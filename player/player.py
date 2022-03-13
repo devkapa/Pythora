@@ -1,9 +1,9 @@
-from python.items.container import Container
-from python.items.enemy import Enemy
-from python.items.food import Food
-from python.items.object import Object
-from python.items.weapon import Weapon
-from python.map.scene import Scene
+from items.container import Container
+from items.enemy import Enemy
+from items.food import Food
+from items.object import Object
+from items.weapon import Weapon
+from movement.scene import Scene
 
 
 def get_match(args, item_list):

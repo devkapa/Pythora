@@ -1,4 +1,4 @@
-from python.items.object import Object
+from items.object import Object
 
 
 class Weapon(Object):
