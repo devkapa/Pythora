@@ -36,7 +36,8 @@ def get_map(path):
             direction_uuid = direction.attrib.get("destination")
             direction_message = direction.text
             direction_health = direction.attrib.get("health")
-            directions.insert(get_index(direction.tag), make_direction(direction_uuid, direction_message, direction_health))
+            directions.insert(get_index(direction.tag),
+                              make_direction(direction_uuid, direction_message, direction_health))
 
         scene_objects = scene.find("objects")
         items = []
@@ -66,7 +67,8 @@ def get_map(path):
                             item_blocking = item.find("blocking").text.split(",")
                             for i in item_blocking:
                                 item_blocking_list.append(int(i))
-                        items.append(Enemy(item_name, item_take_bool, item_mass, item_damage, item_health, item_blocking_list))
+                        items.append(
+                            Enemy(item_name, item_take_bool, item_mass, item_damage, item_health, item_blocking_list))
                     case "weapon":
                         item_event = ""
                         if item_take.text is not None:
@@ -78,8 +80,7 @@ def get_map(path):
     return Map(map_name, map_splash, scenes)
 
 
-def choose_map():
-    maps_dir = "./maps/"
+def choose_map(maps_dir):
 
     if not os.path.isdir(maps_dir):
         print("No maps folder was found. Creating one...")
@@ -87,11 +88,14 @@ def choose_map():
 
     while True:
         files = [f for f in listdir(maps_dir) if isfile(join(maps_dir, f))]
+
         if len(files) < 1:
             print("The maps folder is empty. Please add some maps.")
-            webbrowser.open(os.path.realpath(maps_dir))
+            webbrowser.open('file:///' + os.path.realpath(maps_dir))
             return
+
         print("Please choose which map you would like to play:")
+
         for file in files:
             if file.lower().endswith(".athora"):
                 game_map = elementTree.parse(f'{maps_dir}{file}')

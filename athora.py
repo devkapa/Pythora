@@ -1,3 +1,4 @@
+import os.path
 import sys
 import textwrap
 import logic
@@ -30,7 +31,8 @@ def main():
         print(f"Loading map from file...")
         logic.start_game(get_map(args[0]))
     else:
-        chosen_map = choose_map()
+        maps_path = os.path.dirname(os.path.realpath(__file__)) + "/maps/"
+        chosen_map = choose_map(maps_path)
         if chosen_map is not None:
             logic.start_game(get_map(chosen_map))
 
