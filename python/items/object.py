@@ -17,10 +17,10 @@ class Object:
     def set_name(self, name):
         self.name = name
 
-    def get_mass(self):
+    def get_mass(self) -> int:
         return self.mass
 
-    def get_damage(self):
+    def get_damage(self) -> int:
         return self.damage
 
     def get_take(self):

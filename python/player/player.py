@@ -14,7 +14,7 @@ def get_match(args, item_list):
         for arg in arg_split:
             if arg in name_split:
                 items.append(item)
-    return items
+    return list(dict.fromkeys(items))
 
 
 class Player:
@@ -97,7 +97,7 @@ class Player:
         if args == "":
             print("Specify what you want to take out of that container.")
             return
-        matches = get_match(args.replace(container.get_name().lower(), ""), container.get_contents())
+        matches = get_match(args, container.get_contents())
         if len(matches) < 1:
             print(f"That item isn't in the {container.get_name()}.")
             return

@@ -4,7 +4,7 @@ from python.items.object import Object
 class Container(Object):
 
     contents: list[Object] = []
-    max_mass = None
+    max_mass: int = None
 
     def __init__(self, name, take, mass, damage, max_mass, contents):
         super().__init__(name, take, mass, damage)

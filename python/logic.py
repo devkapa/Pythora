@@ -19,7 +19,7 @@ def start_game(athora_map: Map):
         print("Error initialising map.")
         return
 
-    player = Player(health, inventory, global_map.scenes[0])
+    player = Player(health, inventory, global_map.scenes[7])
 
     print(athora_map.get_splash())
 
@@ -51,11 +51,11 @@ def start_game(athora_map: Map):
                 inv = ""
                 for item in inventory:
                     if isinstance(item, Container):
-                        inv.join(f'\n* {item.get_name()}').strip()
+                        inv += f'\n* {item.get_name()}'
                         for obj in item.get_contents():
-                            inv.join(f'\n   - {obj.get_name()}')
+                            inv += f'\n   - {obj.get_name()}'
                     else:
-                        inv.join(f'\n* {item.get_name()}').strip()
+                        inv += f'\n* {item.get_name()}'
                 if inv == "":
                     inv = "(none)"
                 print(f'Inventory: {inv}\nHealth: {player.get_health()}')
