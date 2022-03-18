@@ -21,12 +21,14 @@ def get_match(args, item_list):
 # The player constructor class
 class PlayerEntity:
     # Initialise the health, inventory and current scene of the player
+    max_health = 0
     health = 0
     inventory: Inventory
     current_scene: Scene
 
     # Define the constructor to be called when a new Player object is created
     def __init__(self, health, inventory, current_scene):
+        self.max_health = health
         self.health = health
         self.inventory = inventory
         self.current_scene = current_scene
@@ -38,8 +40,8 @@ class PlayerEntity:
     # Change the health of the player by an amount passed in parameters
     def change_health(self, amount):
         self.health += int(amount)
-        if self.health > 10:
-            self.health = 10
+        if self.health > self.max_health:
+            self.health = self.max_health
 
     # Get the current scene the player is in
     def get_current_scene(self):
