@@ -160,7 +160,7 @@ def look(player: PlayerEntity):
     # If there are no items print the setting without items
     # Print all possible actions
     if len(scene_objects) < 1:
-        return f"{player.get_current_scene().get_name()}" \
+        return f"{Fore.LIGHTWHITE_EX}{player.get_current_scene().get_name()}{Fore.RESET}" \
                f"{player.get_current_scene().get_setting()}" \
                f"There are no items here." \
                f"\nType \"help\" to see what you can do."
