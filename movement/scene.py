@@ -3,6 +3,7 @@ from movement.coordinate import Coordinate
 from movement.destination import Destination
 
 
+# The Inventory constructor class
 class Scene:
 
     coordinate: Coordinate
@@ -11,6 +12,7 @@ class Scene:
     destinations: list[Destination] = []
     items: list[Object] = []
 
+    # Define the constructor to be called when a new Scene object is created
     def __init__(self, coordinate, name, setting, destinations, items):
         self.coordinate = coordinate
         self.name = name
@@ -18,6 +20,7 @@ class Scene:
         self.destinations = destinations
         self.items = items
 
+    # Getters and setters
     def get_coordinate(self) -> Coordinate:
         return self.coordinate
 

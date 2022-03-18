@@ -17,6 +17,65 @@ from player.inventory import Inventory
 from player.playerentity import PlayerEntity
 
 
+# Define the constructor to be called when a new Map object is created
+# This object can be passed to the get_map() function
+class Map:
+    name = None
+    splash = None
+    scenes = []
+    player = []
+
+    def __init__(self, name, splash, scenes, player):
+        self.name = name
+        self.splash = splash
+        self.scenes = scenes
+        self.player = player
+
+    def get_splash(self):
+        return self.splash
+
+    def get_player(self):
+        return self.player
+
+    def find_scene(self, coordinate: Coordinate) -> Scene:
+        for scene in self.scenes:
+            if coordinate == scene.get_coordinate():
+                return scene
+
+    def print_map(self, player: PlayerEntity):
+        x_coords = []
+        y_coords = []
+
+        for scene in self.scenes:
+            if scene.get_coordinate().z == player.get_z():
+                x_coords.append(scene.get_coordinate().x)
+                y_coords.append(scene.get_coordinate().y)
+        print(f"You are on Level {str(player.get_z())}.\n")
+
+        for x in reversed(sorted(set(x_coords))):
+            for y in sorted(set(y_coords)):
+                current_coord = Coordinate(x, y, player.get_z())
+                adj_coord = Coordinate(x, y + 1, player.get_z())
+                if self.find_scene(current_coord) is not None:
+                    print("[Y]" if self.find_scene(current_coord) is player.get_current_scene() else "[ ]", end='')
+                    print("-" if self.find_scene(adj_coord) is not None else " ", end='')
+                else:
+                    print("    ", end='')
+            print()
+            for y in sorted(set(y_coords)):
+                current_coord = Coordinate(x, y, player.get_z())
+                adj_coord = Coordinate(x - 1, y, player.get_z())
+                print(" ", end='')
+                if self.find_scene(adj_coord) and self.find_scene(current_coord) is not None:
+                    print("|  " if any(current_coord == x.get_coordinate() for x in
+                                       self.find_scene(adj_coord).get_destinations()) else "   ", end='')
+                else:
+                    print("   ", end='')
+            print()
+
+        print("[Y] = You")
+
+
 def get_map(path):
     game_map = elementTree.parse(path)
 
@@ -139,60 +198,3 @@ def make_direction(direction, coordinate, message, health):
         return Destination(direction, None, textwrap.dedent(message).strip(), None)
     else:
         return Destination(direction, None, textwrap.dedent(message).strip(), health)
-
-
-class Map:
-    name = None
-    splash = None
-    scenes = []
-    player = []
-
-    def __init__(self, name, splash, scenes, player):
-        self.name = name
-        self.splash = splash
-        self.scenes = scenes
-        self.player = player
-
-    def get_splash(self):
-        return self.splash
-
-    def get_player(self):
-        return self.player
-
-    def find_scene(self, coordinate: Coordinate) -> Scene:
-        for scene in self.scenes:
-            if coordinate == scene.get_coordinate():
-                return scene
-
-    def print_map(self, player: PlayerEntity):
-        x_coords = []
-        y_coords = []
-
-        for scene in self.scenes:
-            if scene.get_coordinate().z == player.get_z():
-                x_coords.append(scene.get_coordinate().x)
-                y_coords.append(scene.get_coordinate().y)
-        print(f"You are on Level {str(player.get_z())}.\n")
-
-        for x in reversed(sorted(set(x_coords))):
-            for y in sorted(set(y_coords)):
-                current_coord = Coordinate(x, y, player.get_z())
-                adj_coord = Coordinate(x, y + 1, player.get_z())
-                if self.find_scene(current_coord) is not None:
-                    print("[Y]" if self.find_scene(current_coord) is player.get_current_scene() else "[ ]", end='')
-                    print("-" if self.find_scene(adj_coord) is not None else " ", end='')
-                else:
-                    print("    ", end='')
-            print()
-            for y in sorted(set(y_coords)):
-                current_coord = Coordinate(x, y, player.get_z())
-                adj_coord = Coordinate(x - 1, y, player.get_z())
-                print(" ", end='')
-                if self.find_scene(adj_coord) and self.find_scene(current_coord) is not None:
-                    print("|  " if any(current_coord == x.get_coordinate() for x in
-                                       self.find_scene(adj_coord).get_destinations()) else "   ", end='')
-                else:
-                    print("   ", end='')
-            print()
-
-        print("[Y] = You")
