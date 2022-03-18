@@ -207,8 +207,9 @@ def choose_map(maps_dir):
 
         # If there are no maps, open the maps folder
         if len(files) < 1:
-            input("The maps folder is empty. Please add some maps.")
+            print("The maps folder is empty. Please add some maps.")
             webbrowser.open('file:///' + os.path.realpath(maps_dir))
+            input()
             return
 
         # Display available maps to player
