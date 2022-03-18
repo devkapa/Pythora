@@ -1,6 +1,7 @@
 from items.object import Object
 
 
+# An extension of the Object class with a saturation integer
 class Food(Object):
 
     saturation = None

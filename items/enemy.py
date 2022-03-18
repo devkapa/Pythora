@@ -1,6 +1,8 @@
 from items.object import Object
 
 
+# An extension of the Object class with a health variable and a list of
+# directions that the Enemy object is obstructing
 class Enemy(Object):
 
     health = None

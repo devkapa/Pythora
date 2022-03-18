@@ -8,12 +8,14 @@ class Destination:
     message = None
     health = None
 
+    # Define the constructor to be called when a new Destination object is created
     def __init__(self, direction, coordinate, message, health):
         self.direction = direction
         self.coordinate = coordinate
         self.message = message
         self.health = health
 
+    # Getters
     def get_coordinate(self):
         return self.coordinate
 
@@ -25,19 +27,3 @@ class Destination:
 
     def get_message(self):
         return self.message
-
-
-def get_index(direction):
-    match direction:
-        case "north":
-            return 0
-        case "east":
-            return 1
-        case "south":
-            return 2
-        case "west":
-            return 3
-        case "up":
-            return 4
-        case "down":
-            return 5

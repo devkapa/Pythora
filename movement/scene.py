@@ -3,7 +3,7 @@ from movement.coordinate import Coordinate
 from movement.destination import Destination
 
 
-# The Inventory constructor class
+# The Scene constructor class
 class Scene:
 
     coordinate: Coordinate
@@ -20,7 +20,7 @@ class Scene:
         self.destinations = destinations
         self.items = items
 
-    # Getters and setters
+    # Getters
     def get_coordinate(self) -> Coordinate:
         return self.coordinate
 

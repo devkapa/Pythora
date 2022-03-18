@@ -1,5 +1,5 @@
 import colorama
-from colorama import Fore
+from colorama import Fore, Back
 
 from items.container import Container
 from items.enemy import Enemy
@@ -25,6 +25,8 @@ def start_game(game_map: Map):
     if game_map is None:
         print("Error initialising map.")
         return
+    else:
+        print(f"\n{Back.WHITE}{Fore.BLACK}{game_map.get_name()}{Back.RESET}{Fore.RESET}")
 
     # Initialise a new player with health and inventory
     # Set the player's current scene to 0 (first scene)
@@ -43,7 +45,7 @@ def start_game(game_map: Map):
         print("> " + Fore.GREEN, end="")
         u_input = input()
 
-        # Reset colour of succeeding text to white
+        # Reset colour of succeeding text
         print(Fore.RESET, end="")
 
         # Convert and trim input to lowercase, and find the directive verb in the input

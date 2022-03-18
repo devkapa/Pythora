@@ -5,12 +5,14 @@ class Object:
     mass: int = None
     damage: int = None
 
+    # The constructor to be called when a new Object is created.
     def __init__(self, name, take, mass, damage):
         self.name = name
         self.take = take
         self.mass = mass
         self.damage = damage
 
+    # Getters and setters
     def get_name(self):
         return self.name
 

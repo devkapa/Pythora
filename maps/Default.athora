@@ -1,9 +1,26 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
+<!-- Root element -->
 <map name="The Wrath of Felon">
 
+    <!-- The player's starting health, inventory size and coordinate position -->
     <player health="10" max-inventory="15" x="0" y="0" z="0"/>
 
+    <!-- The message to be displayed when the map is loaded -->
+    <splash>
+        The year is 2137. Renowned billionaire Felon Muks, CEO of Tesca, The Interesting Company and SpaceF, has mutilated the structure of society.
+
+        With slavery rates skyrocketing, humanity prays in fear as the world crumbles beneath his evil fist...
+    </splash>
+
+    <!--
+        All scenes in the Default map. Each scene has a unique coordinate position.
+        If movement is not prohibited in a certain compass direction, the direction
+        will have a Node containing text to be displayed when movement is attempted.
+
+        User-interactive items within scenes are of 5 types: simple objects, weapons,
+        foods, containers, and enemies. Each can be represented with an <item> tag.
+     -->
     <scenes>
         <scene name="Dock">
             <directions x="0" y="0" z="0">
@@ -208,10 +225,14 @@
         <scene name="Hallway, Level 1">
             <directions x="1" y="3" z="1">
                 <north>You've walked into a cupboard. *disappointed sigh*</north>
+                <south>
+                    Peering through the circular window of the door reveals what looks like the engine room.
+                    Perhaps a little too dangerous for you... It's probably a good idea to stay in the hallway.
+                </south>
             </directions>
             <setting>
                 You seem to have entered a rather posh looking hallway.
-                There's a door to your east and west as well as another staircase leading up. You could also go down the stairs you just climbed up.
+                There's a door to your east, south and west as well as another staircase leading up. You could also go down the stairs you just climbed up.
             </setting>
             <items>
                 <item type="enemy">
@@ -219,26 +240,6 @@
                     <stats mass="10" damage="5" health="10"/>
                     <take bool="true"/>
                     <blocking>east,up</blocking>
-                </item>
-            </items>
-        </scene>
-        <scene name="Engine Bay">
-            <directions x="0" y="3" z="1">
-                <east>Sweet wall, maybe taste it to check.</east>
-                <south>You're not a boat mechanic, stay away from that engine.</south>
-                <west>You just walked into a wall, you now have a shiny new bruise.</west>
-                <up>Nothing above you but a ceiling.</up>
-                <down>Wanna fall through a floor?</down>
-            </directions>
-            <setting>
-                This seems to be the Engine Bay, there is a single Rolls-Royce MT30 engine working as the yacht cruises along.
-                I don't think you can do much in this room, considering the only major skill on your CV is professional water slide testing.
-            </setting>
-            <items>
-                <item type="weapon">
-                    <name>Wrench</name>
-                    <stats mass="4" damage="3"/>
-                    <take bool="true"/>
                 </item>
             </items>
         </scene>
@@ -468,11 +469,5 @@
             </setting>
         </scene>
     </scenes>
-
-    <splash>
-        The year is 2137. Renowned billionaire Felon Muks, CEO of Tesca, The Interesting Company and SpaceF, has mutilated the structure of society.
-
-        With slavery rates skyrocketing, humanity prays in fear as the world crumbles beneath his evil fist...
-    </splash>
 
 </map>
