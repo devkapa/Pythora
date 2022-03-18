@@ -1,7 +1,7 @@
 class Object:
 
     name: str = None
-    take: bool = None
+    take: str = None
     mass: int = None
     damage: int = None
 

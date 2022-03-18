@@ -1,23 +1,25 @@
 from items.object import Object
+from movement.coordinate import Coordinate
+from movement.destination import Destination
 
 
 class Scene:
 
-    uuid = None
+    coordinate: Coordinate
     name = None
     setting = None
-    destinations = []
+    destinations: list[Destination] = []
     items: list[Object] = []
 
-    def __init__(self, uuid, name, setting, destinations, items):
-        self.uuid = uuid
+    def __init__(self, coordinate, name, setting, destinations, items):
+        self.coordinate = coordinate
         self.name = name
         self.setting = setting
         self.destinations = destinations
         self.items = items
 
-    def get_uuid(self):
-        return self.uuid
+    def get_coordinate(self) -> Coordinate:
+        return self.coordinate
 
     def get_name(self):
         return self.name
@@ -25,8 +27,13 @@ class Scene:
     def get_setting(self):
         return self.setting
 
-    def get_destinations(self):
+    def get_destinations(self) -> list[Destination]:
         return self.destinations
+
+    def get_destination(self, direction):
+        for d in self.destinations:
+            if d.get_direction() == direction:
+                return d
 
     def get_items(self):
         return self.items

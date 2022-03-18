@@ -23,6 +23,10 @@ class Container(Object):
             n += o.get_mass()
         return n
 
+    def get_self_mass(self):
+        real_mass = self.get_mass() - super().get_mass()
+        return real_mass if real_mass > 0 else 0
+
     def get_contents(self):
         return self.contents
 

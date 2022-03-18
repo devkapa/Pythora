@@ -1,16 +1,24 @@
-class Direction:
+from movement.coordinate import Coordinate
 
-    uuid = None
+
+class Destination:
+
+    direction = None
+    coordinate: Coordinate
     message = None
     health = None
 
-    def __init__(self, uuid, message, health):
-        self.uuid = uuid
+    def __init__(self, direction, coordinate, message, health):
+        self.direction = direction
+        self.coordinate = coordinate
         self.message = message
         self.health = health
 
-    def get_uuid(self):
-        return self.uuid
+    def get_coordinate(self):
+        return self.coordinate
+
+    def get_direction(self):
+        return self.direction
 
     def get_health(self):
         return self.health
