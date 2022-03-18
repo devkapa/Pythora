@@ -39,7 +39,11 @@ def main():
             logic.start_game(get_map(args[0]))
             args.clear()
         else:
-            maps_path = os.path.dirname(os.path.realpath(__file__)) + "/maps/"
+            if getattr(sys, 'frozen', False):
+                maps_path = os.path.dirname(sys.executable)
+                os.chdir(maps_path)
+            else:
+                maps_path = os.path.dirname(os.path.realpath(__file__))
             chosen_map = choose_map(maps_path)
             if chosen_map is not None:
                 logic.start_game(get_map(chosen_map))

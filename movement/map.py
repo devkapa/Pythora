@@ -196,6 +196,8 @@ def get_map(path):
 # Gives the player a list of all maps in the game folder, and returns it
 # as a file path that can be passed to the get_map method.
 def choose_map(maps_dir):
+    maps_dir += "/maps/"
+
     # If there is no map directory, create one
     if not os.path.isdir(maps_dir):
         print("No maps folder was found. Creating one...")
@@ -207,7 +209,7 @@ def choose_map(maps_dir):
 
         # If there are no maps, open the maps folder
         if len(files) < 1:
-            print("The maps folder is empty. Please add some maps.")
+            print("The maps folder is empty. Add some maps to start playing Athora!")
             webbrowser.open('file:///' + os.path.realpath(maps_dir))
             input()
             return
