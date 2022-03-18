@@ -157,22 +157,18 @@ def get_verb(i: str):
 def look(player: PlayerEntity):
     # Get all objects in the player's current scene
     scene_objects = player.get_current_scene().get_items()
-    # If there are no items print the setting without items
-    # Print all possible actions
-    if len(scene_objects) < 1:
-        return f"{Fore.LIGHTWHITE_EX}{player.get_current_scene().get_name()}{Fore.RESET}" \
-               f"{player.get_current_scene().get_setting()}" \
-               f"There are no items here." \
-               f"\nType \"help\" to see what you can do."
     # For each object in the scene, separate them with a comma
     # and print the setting with items included
-    # Print all possible actions
-    scene_objects_names = []
-    for obj in scene_objects:
-        scene_objects_names.append(obj.get_name())
-    return f"{player.get_current_scene().get_name()}" \
+    if len(scene_objects) < 1:
+        items = "There are no items here."
+    else:
+        scene_objects_names = []
+        for obj in scene_objects:
+            scene_objects_names.append(obj.get_name())
+        items = f'There is a {", a ".join(scene_objects_names)} here.'
+    return f"{Fore.LIGHTWHITE_EX}{player.get_current_scene().get_name()}{Fore.RESET}" \
            f"{player.get_current_scene().get_setting()}" \
-           f'There is a {", a ".join(scene_objects_names)} here.' \
+           f"{items}" \
            f"\nType \"help\" to see what you can do."
 
 
