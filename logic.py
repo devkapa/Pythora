@@ -95,7 +95,7 @@ def start_game(game_map: Map):
                 for item in player.get_inventory().get_items():
                     if isinstance(item, Container):
                         # If there is a container in the player's inventory, list all of it's contents
-                        percent = round((item.get_self_mass()/item.get_max_mass())*100)
+                        percent = round((item.get_self_mass() / item.get_max_mass()) * 100)
                         inv += f'\n* {item.get_name()} ({percent}% full)'
                         for obj in item.get_contents():
                             inv += f'\n   - {obj.get_name()}'

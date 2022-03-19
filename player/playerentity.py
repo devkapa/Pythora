@@ -5,15 +5,17 @@ from items.weapon import Weapon
 from player.inventory import Inventory
 from movement.scene import Scene
 
+import re
+
 
 # Filter through a list of items and find all that match the string query
 def get_match(args, item_list):
     items = []
     for item in item_list:
-        arg_split = [x for x in args.split()]
-        name_split = [x for x in item.get_name().lower().split()]
+        arg_split = [re.sub(r'[^\w ]', '', x) for x in args.split()]
+        name_split = [re.sub(r'[^\w ]', '', x) for x in item.get_name().lower().split()]
         for arg in arg_split:
-            if arg in name_split:
+            if any(arg in x for x in name_split):
                 items.append(item)
     return list(dict.fromkeys(items))
 
