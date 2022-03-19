@@ -6,16 +6,23 @@ from player.inventory import Inventory
 from movement.scene import Scene
 
 import re
+from difflib import SequenceMatcher
+
+
+# Check how similar two strings are
+def similar(a, b):
+    return SequenceMatcher(None, a, b).ratio()
 
 
 # Filter through a list of items and find all that match the string query
+# OR are similar close matches
 def get_match(args, item_list):
     items = []
     for item in item_list:
         arg_split = [re.sub(r'[^\w ]', '', x) for x in args.split()]
         name_split = [re.sub(r'[^\w ]', '', x) for x in item.get_name().lower().split()]
         for arg in arg_split:
-            if any(arg in x for x in name_split):
+            if any(arg in x or similar(arg, x) > 0.5 for x in name_split):
                 items.append(item)
     return list(dict.fromkeys(items))
 
