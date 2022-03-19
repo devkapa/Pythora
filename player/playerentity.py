@@ -22,7 +22,7 @@ def get_match(args, item_list):
         arg_split = [re.sub(r'[^\w ]', '', x) for x in args.split()]
         name_split = [re.sub(r'[^\w ]', '', x) for x in item.get_name().lower().split()]
         for arg in arg_split:
-            if any(arg in x or similar(arg, x) > 0.5 for x in name_split):
+            if any(similar(arg, x) > 0.75 for x in name_split):
                 items.append(item)
     return list(dict.fromkeys(items))
 
