@@ -160,7 +160,7 @@ def get_verb(args: str):
     args = args.split()
     for v in verbs:
         for a in args:
-            if similar(v, a) > 0.75:
+            if similar(v, a) > 0.9:
                 return v
 
 
