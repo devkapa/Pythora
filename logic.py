@@ -37,6 +37,7 @@ def start_game(game_map: Map):
     print(game_map.get_splash())
 
     print(look(player))
+    verbs_wrong = 0
 
     # While the player is alive, keep the game running
     while player.get_health() > 0:
@@ -55,7 +56,15 @@ def start_game(game_map: Map):
         # If there was no directive verb, ignore input and print error
         if verb is None:
             print(f"I don't know what you mean by \"{command}\".")
-            continue
+            verbs_wrong += 1
+            if verbs_wrong < 10:
+                print(f"Number of wrong inputs: {verbs_wrong}")
+                continue
+            else:
+                print("You input in too many wrong inputs. Get out.")
+                break
+        else:
+            verbs_wrong -= 1 if verbs_wrong > 0 else 0
 
         # Get arguments after directive verb
         args = command.replace(verb, "").strip()
