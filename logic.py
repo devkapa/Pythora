@@ -8,6 +8,7 @@ from items.object import Object
 from movement.destination import Destination
 from movement.map import Map
 from player.playerentity import PlayerEntity
+from difflib import SequenceMatcher
 
 # Initialise ANSI escape colour codes for Windows
 colorama.init()
@@ -155,10 +156,12 @@ def start_game(game_map: Map):
 
 
 # Filter through a string to check if it contains a verb
-def get_verb(i: str):
+def get_verb(args: str):
+    args = args.split()
     for v in verbs:
-        if v in i:
-            return v
+        for a in args:
+            if similar(v, a) > 0.75:
+                return v
 
 
 # Returns a string of the player's current scene,
@@ -234,9 +237,14 @@ def move(direction, player: PlayerEntity):
     print(look(player))
 
 
+# Check how similar two strings are
+def similar(a, b):
+    return SequenceMatcher(None, a, b).ratio()
+
+
 # String list of verbs which can be used to make decisions and movements in the game
 verbs = ["quit", "go", "take", "pick", "pickup", "drop", "move", "inventory", "inv", "what", "help",
-         "kill", "attack", "look", "north", "east", "south", "west", "up", "down", "knife",
+         "kill", "attack", "look", "north", "east", "south", "west", "up", "down", "knife", "steal",
          "stab", "hit", "murder", "items", "walk", "eat", "consume", "drink", "hp", "health",
          "put", "place", "insert", "remove", "backpack", "bp", "map", "action", "cmd", "command"]
 

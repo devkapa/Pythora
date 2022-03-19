@@ -99,6 +99,7 @@ class PlayerEntity:
         # If no item or container was specified
         if container is None:
             print("You must have the container in your inventory.")
+            print("Syntax: put [item] in [container]")
             return
         if args == "":
             print("Specify what you want to add to that container.")
@@ -127,6 +128,7 @@ class PlayerEntity:
         # If no item or container was specified
         if container is None:
             print("You must have the container in your inventory.")
+            print("Syntax: take [item] out of [container]")
             return
         if args == "":
             print("Specify what you want to take out of that container.")

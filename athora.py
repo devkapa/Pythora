@@ -13,7 +13,7 @@ colorama.init()
 
 def main():
     # Version
-    v = "py-v2.0.3"
+    v = "py-v2.0.4"
 
     # Check for updates
     try:
