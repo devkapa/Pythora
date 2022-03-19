@@ -9,4 +9,4 @@ In Athora's default map "The Wrath of Felon", you play through the perspective o
 Play to find out more!
 
 # How to play
-Simply run the download and run the installer in the releases section! Once you've started the game, simply type what you want to do to progress. (https://github.com/Nulfy/Pythora/releases/tag/py-v2.0.1)
+Simply download and run the installer in the releases section! Once you've started the game, type what you want to do to progress. (https://github.com/Nulfy/Pythora/releases/latest)

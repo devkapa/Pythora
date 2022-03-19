@@ -5,12 +5,25 @@ import logic
 import colorama
 from movement.map import choose_map, get_map
 from colorama import Fore
+import requests
 
 # Initialise ANSI escape colour codes for Windows
 colorama.init()
 
 
 def main():
+    # Version
+    v = "py-v2.0.2"
+
+    # Check for updates
+    try:
+        response = requests.get("https://api.github.com/repos/Nulfy/Pythora/releases/latest")
+        if response.json()["tag_name"] != v:
+            print(f"{Fore.LIGHTCYAN_EX}There is a new version available! Download it at"
+                  f"\nhttps://github.com/Nulfy/Pythora/releases/latest{Fore.RESET}")
+    except(requests.ConnectionError, requests.Timeout):
+        print(f"{Fore.LIGHTCYAN_EX}No internet connection, cannot check for updates.{Fore.RESET}")
+
     # Get command line args
     args = sys.argv[1:]
 
@@ -25,7 +38,7 @@ def main():
                    d88P  888 888    888 "88b d88""88b 888P"      "88b
                   d88P   888 888    888  888 888  888 888    .d888888
                  d8888888888 Y88b.  888  888 Y88..88P 888    888  888
-                d88P     888  "Y888 888  888  "Y88P"  888    "Y888888  {Fore.YELLOW}py-v2.0.1{Fore.RESET}
+                d88P     888  "Y888 888  888  "Y88P"  888    "Y888888  {Fore.YELLOW}{v}{Fore.RESET}
                 """)
 
     print(title)
