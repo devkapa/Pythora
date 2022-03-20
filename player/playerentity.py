@@ -6,8 +6,12 @@ from player.inventory import Inventory
 from movement.scene import Scene
 
 import re
+import colorama
+from colorama import Fore
 from difflib import SequenceMatcher
 
+# Initialise ANSI escape colour codes for Windows
+colorama.init()
 
 # Check how similar two strings are
 def similar(a, b):
@@ -34,6 +38,7 @@ class PlayerEntity:
     health = 0
     inventory: Inventory
     current_scene: Scene
+    combat: bool = False
 
     # Define the constructor to be called when a new Player object is created
     def __init__(self, health, inventory, current_scene):
@@ -238,11 +243,16 @@ class PlayerEntity:
                 enemy.change_health(-match.get_damage())
                 print(f"You attacked the {enemy.get_name()} with a {match.get_name()} for {match.get_damage()} damage.")
                 if enemy.is_alive():
-                    print(f"It swings back at you, dealing {enemy.get_damage()} damage to you."
-                          f"\nThe {enemy.get_name()} is now on {enemy.get_health()} HP.")
                     self.change_health(-enemy.get_damage())
+                    print(f"It swings back at you, dealing {enemy.get_damage()} damage to you. Your health: {self.get_health()}"
+                          f"\nThe {enemy.get_name()} is now on {enemy.get_health()} HP.")
+                    self.combat = True
+                    print(f"{Fore.RED}You are now in combat.{Fore.RESET}")
                 else:
                     print(f"The {enemy.get_name()} is now dead.")
                     enemy.set_name(f"Dead {enemy.get_name()}")
+                    if self.combat:
+                        print(f"{Fore.GREEN}You are no longer in combat.{Fore.RESET}")
+                    self.combat = False
             else:
                 print(f"That {enemy.get_name()} is already dead.")

@@ -38,12 +38,13 @@ def start_game(game_map: Map):
 
     print(look(player))
     verbs_wrong = 0
+    combat = False
 
     # While the player is alive, keep the game running
     while player.get_health() > 0:
 
         # Colourise the user input
-        print("> " + Fore.GREEN, end="")
+        print("> " + Fore.LIGHTGREEN_EX, end="")
         u_input = input()
 
         # Reset colour of succeeding text
@@ -52,6 +53,11 @@ def start_game(game_map: Map):
         # Convert and trim player input to lowercase, and find the directive verb in the input
         command = u_input.lower().strip()
         verb = get_verb(command)
+
+        # If the player tried to bail from a fight, kill them
+        if combat and not any(verb == v for v in ["kill", "attack", "knife", "stab", "hit", "murder"]):
+            print(f"{Fore.RED}You were in combat, and didn't fight back!{Fore.RESET}")
+            break
 
         # If there was no directive verb, ignore input and print error.
         # When the user exceeds 10 invalid inputs, kick them from the game.
@@ -152,6 +158,8 @@ def start_game(game_map: Map):
                 else:
                     print("Specify what you want to attack with.")
                     print("Syntax: attack [enemy] with [weapon]")
+
+        combat = True if player.combat else False
 
     # Once the player is dead (health is below or equal to 0) and
     # the while loop has ended, print the death message
@@ -254,7 +262,7 @@ verbs = ["quit", "go", "take", "pick", "pickup", "drop", "move", "inventory", "i
 # The coloured message printed when the player has died/game is ended
 deathMessage = f"""
                 
-              {Fore.RED}**Poof! You have died.**
+              {Fore.LIGHTRED_EX}**Poof! You have died.**
             {Fore.RESET}Please restart to play again.
             
             """
