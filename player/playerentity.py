@@ -14,8 +14,8 @@ def similar(a, b):
     return SequenceMatcher(None, a, b).ratio()
 
 
-# Filter through a list of items and find all that match the string query
-# OR are similar close matches
+# Filter through a list of items and find all that either match or are similar to
+# the string query. Return a dictionary list of all matching items.
 def get_match(args, item_list):
     items = []
     for item in item_list:
@@ -60,6 +60,7 @@ class PlayerEntity:
     def set_current_scene(self, scene):
         self.current_scene = scene
 
+    # Get the coordinate Z level (height) of the player
     def get_z(self):
         return self.current_scene.get_coordinate().z
 

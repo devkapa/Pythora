@@ -22,15 +22,14 @@ def start_game(game_map: Map):
     global global_map
     global_map = game_map
 
-    # If no map was provided, throw error
+    # If a corrupt or invalid map was provided, throw error
     if game_map is None:
         print("Error initialising map.")
         return
     else:
         print(f"\n{Back.WHITE}{Fore.BLACK}{game_map.get_name()}{Back.RESET}{Fore.RESET}")
 
-    # Initialise a new player with health and inventory
-    # Set the player's current scene to 0 (first scene)
+    # Initialise a new player with the health, inventory and starting position as defined in map file
     map_player = global_map.get_player()
     player = PlayerEntity(map_player[0], map_player[1], global_map.find_scene(map_player[2]))
 
@@ -50,11 +49,12 @@ def start_game(game_map: Map):
         # Reset colour of succeeding text
         print(Fore.RESET, end="")
 
-        # Convert and trim input to lowercase, and find the directive verb in the input
+        # Convert and trim player input to lowercase, and find the directive verb in the input
         command = u_input.lower().strip()
         verb = get_verb(command)
 
-        # If there was no directive verb, ignore input and print error
+        # If there was no directive verb, ignore input and print error.
+        # When the user exceeds 10 invalid inputs, kick them from the game.
         if verb is None:
             print(f"I don't know what you mean by \"{command}\".")
             verbs_wrong += 1
@@ -67,7 +67,7 @@ def start_game(game_map: Map):
         else:
             verbs_wrong -= 1 if verbs_wrong > 0 else 0
 
-        # Get arguments after directive verb
+        # Get all input arguments excluding the directive verb
         args = command.replace(verb, "").strip()
 
         # Execute code dependent on the directive verb
@@ -76,10 +76,11 @@ def start_game(game_map: Map):
                 # Print the setting of the player's current scene
                 print(look(player))
             case ("north" | "east" | "south" | "west" | "up" | "down"):
-                # Move in the provided compass direction
+                # Move in the respective compass direction
                 move(verb, player)
             case ("move" | "go" | "walk"):
-                # Move in the provided compass direction
+                # Find the compass direction the user wants to move in
+                # If it exists, move the player there
                 direction = get_verb(args)
                 if direction is not None:
                     move(direction, player)
@@ -102,7 +103,7 @@ def start_game(game_map: Map):
                             inv += f'\n   - {obj.get_name()}'
                     else:
                         inv += f'\n* {item.get_name()}'
-                # If the inventory is empty, simply print (none)
+                # If the inventory is empty, let the player know
                 if inv == "":
                     inv = "Empty"
                     percent = 0
@@ -121,8 +122,10 @@ def start_game(game_map: Map):
                 # Drop an item from the player's inventory
                 player.drop(args)
             case "map":
+                # Print a stylised map of the player's surroundings
                 global_map.print_map(player)
             case ("action" | "cmd" | "command" | "what" | "help"):
+                # Print a list of actions the player can do
                 print(possible_cmds(player))
             case ("put" | "place" | "insert"):
                 # Put an inventory item inside a container
@@ -155,17 +158,16 @@ def start_game(game_map: Map):
     print(deathMessage)
 
 
-# Filter through a string to check if it contains a verb
+# Filter through a string to check if it contains or is similar to a verb
 def get_verb(args: str):
     args = args.split()
     for v in verbs:
         for a in args:
-            if similar(v, a) > 0.9:
+            if similar(v, a) >= 0.9:
                 return v
 
 
-# Returns a string of the player's current scene,
-# containing the setting string and all items within
+# Returns a string, containing the name, setting and items of the scene the player is in
 def look(player: PlayerEntity):
     # Get all objects in the player's current scene
     scene_objects = player.get_current_scene().get_items()
@@ -238,6 +240,7 @@ def move(direction, player: PlayerEntity):
 
 
 # Check how similar two strings are
+# Returns a float between 0.0 and 1.0 (no match to complete match)
 def similar(a, b):
     return SequenceMatcher(None, a, b).ratio()
 

@@ -15,7 +15,8 @@ def main():
     # Version
     v = "py-v2.0.4"
 
-    # Check for updates
+    # Check for updates from GitHub - if this version doesn't match the latest version
+    # If there is no internet, print error but run game
     try:
         response = requests.get("https://api.github.com/repos/Nulfy/Pythora/releases/latest")
         if response.json()["tag_name"] != v:
@@ -44,19 +45,20 @@ def main():
     print(title)
 
     while True:
-        # Check if a map was provided in CMD args, and if so,
-        # start the game with that map. Otherwise, allow the user
-        # to choose a map.
+        # Check if a map was provided in CMD args, and if so, start the game with that map.
+        # Otherwise, allow the user to choose a map.
         if len(args) > 0:
             print(f"Loading map from file...")
             logic.start_game(get_map(args[0]))
             args.clear()
         else:
+            # Find the application folder, respective to the executable this is running in
             if getattr(sys, 'frozen', False):
                 maps_path = os.path.dirname(sys.executable)
                 os.chdir(maps_path)
             else:
                 maps_path = os.path.dirname(os.path.realpath(__file__))
+            # Let the user choose a map from the application's map folder
             chosen_map = choose_map(maps_path)
             if chosen_map is not None:
                 logic.start_game(get_map(chosen_map))
