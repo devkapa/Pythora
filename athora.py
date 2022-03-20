@@ -13,7 +13,7 @@ colorama.init()
 
 def main():
     # Version
-    v = "py-v2.0.4"
+    v = "py-v2.0.5"
 
     # Check for updates from GitHub - if this version doesn't match the latest version
     # If there is no internet, print error but run game
