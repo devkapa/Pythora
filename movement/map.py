@@ -4,6 +4,7 @@ import textwrap
 from os import listdir
 from os.path import isfile, join
 import webbrowser
+from colorama import Fore
 
 from items.container import Container
 from items.enemy import Enemy
@@ -221,7 +222,8 @@ def choose_map(maps_dir):
             game_map = elementTree.parse(f'{maps_dir}{file}')
             print(f'{files.index(file)}: {game_map.getroot().attrib.get("name")} ({file})')
 
-        u_input = input('> ')
+        print("> " + Fore.LIGHTGREEN_EX, end="")
+        u_input = input()
 
         # If the player wishes to close the game, return a NoneType
         if u_input == "quit" or u_input == "exit":
