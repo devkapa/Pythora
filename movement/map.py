@@ -10,6 +10,7 @@ from items.container import Container
 from items.enemy import Enemy
 from items.food import Food
 from items.object import Object
+from items.readable import Readable
 from items.weapon import Weapon
 from movement.coordinate import coordinate_from_direction, Coordinate
 from movement.destination import Destination
@@ -155,39 +156,7 @@ def get_map(path):
             scene_items = scene_items.findall("item")
 
             for item in scene_items:
-
-                # Get the item's name, type and stats
-                item_name = item.find("name").text
-                item_stats = item.find("stats")
-                item_take = item.find("take")
-                item_take_bool = item_take.attrib.get("bool")
-                item_mass = int(item_stats.attrib.get("mass"))
-                item_damage = int(item_stats.attrib.get("damage"))
-
-                # and then convert it to its corresponding Object type
-                match item.attrib.get("type"):
-                    case "food":
-                        item_saturation = int(item_stats.attrib.get("saturation"))
-                        items.append(Food(item_name, item_take_bool, item_mass, item_damage, item_saturation))
-                    case "container":
-                        item_max_mass = int(item_stats.attrib.get("max-mass"))
-                        items.append(Container(item_name, item_take_bool, item_mass, item_damage, item_max_mass, []))
-                    case "object":
-                        items.append(Object(item_name, item_take_bool, item_mass, item_damage))
-                    case "enemy":
-                        item_blocking_list = []
-                        item_health = int(item_stats.attrib.get("health"))
-                        if item.find("blocking").text is not None:
-                            item_blocking = item.find("blocking").text.split(",")
-                            for i in item_blocking:
-                                item_blocking_list.append(i)
-                        items.append(
-                            Enemy(item_name, item_take_bool, item_mass, item_damage, item_health, item_blocking_list))
-                    case "weapon":
-                        item_event = ""
-                        if item_take.text is not None:
-                            item_event = textwrap.dedent(item_take.text).strip()
-                        items.append(Weapon(item_name, item_take_bool, item_mass, item_damage, item_event))
+                create_item(item, items)
 
         # Add the scene to a list
         scenes.append(Scene(scene_coordinates, scene_name, scene_setting, directions, items, scene_pwd))
@@ -226,6 +195,7 @@ def choose_map(maps_dir):
 
         print("> " + Fore.LIGHTGREEN_EX, end="")
         u_input = input()
+        print(Fore.RESET, end="")
 
         # If the player wishes to close the game, return a NoneType
         if u_input == "quit" or u_input == "exit":
@@ -242,3 +212,46 @@ def choose_map(maps_dir):
         except ValueError:
             print("Enter a valid number")
             continue
+
+
+def create_item(item, items):
+    # Get the item's name, type and stats
+    item_name = item.find("name").text
+    item_stats = item.find("stats")
+    item_take = item.find("take")
+    item_take_bool = item_take.attrib.get("bool")
+    item_mass = int(item_stats.attrib.get("mass"))
+    item_damage = int(item_stats.attrib.get("damage"))
+    match item.attrib.get("type"):
+        case "food":
+            item_saturation = int(item_stats.attrib.get("saturation"))
+            items.append(Food(item_name, item_take_bool, item_mass, item_damage, item_saturation))
+        case "container":
+            item_max_mass = int(item_stats.attrib.get("max-mass"))
+            items.append(Container(item_name, item_take_bool, item_mass, item_damage, item_max_mass, []))
+        case "object":
+            items.append(Object(item_name, item_take_bool, item_mass, item_damage))
+        case "enemy":
+            item_blocking_list = []
+            item_inventory = []
+            item_inventory_max_mass = 0
+            item_health = int(item_stats.attrib.get("health"))
+            if item.find("blocking").text is not None:
+                item_blocking = item.find("blocking").text.split(",")
+                for i in item_blocking:
+                    item_blocking_list.append(i)
+            if item.find("inventory") is not None:
+                item_inventory_max_mass = item.find("inventory").attrib.get("max-mass")
+                item_inventory_items = item.find("inventory").findall("item")
+                for i in item_inventory_items:
+                    create_item(i, item_inventory)
+            items.append(
+                Enemy(item_name, item_take_bool, item_mass, item_damage, item_health, item_blocking_list, Inventory(item_inventory, item_inventory_max_mass)))
+        case "weapon":
+            item_event = ""
+            if item_take.text is not None:
+                item_event = textwrap.dedent(item_take.text).strip()
+            items.append(Weapon(item_name, item_take_bool, item_mass, item_damage, item_event))
+        case "readable":
+            item_text = textwrap.dedent(item.find("text").text).strip()
+            items.append(Readable(item_name, item_take_bool, item_mass, item_damage, item_text))

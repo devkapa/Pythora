@@ -1,6 +1,7 @@
 from items.container import Container
 from items.enemy import Enemy
 from items.food import Food
+from items.readable import Readable
 from items.weapon import Weapon
 from player.inventory import Inventory
 from movement.scene import Scene
@@ -57,6 +58,9 @@ class PlayerEntity:
         self.health += int(amount)
         if self.health > self.max_health:
             self.health = self.max_health
+
+    def kill(self):
+        self.change_health(-self.max_health)
 
     # Get the current scene the player is in
     def get_current_scene(self):
@@ -222,6 +226,26 @@ class PlayerEntity:
             else:
                 print(f"You cannot eat a {match.get_name()}!")
 
+    # Eat an item in the player's inventory
+    def read(self, args):
+        # If no item was specified
+        if args == "":
+            print("Specify what you want to read.")
+            print("Syntax: read [item]")
+            return
+        # Get a list of items in the player's inventory that match the player's query
+        matches = get_match(args, self.inventory.get_items())
+        if len(matches) < 1:
+            print(f"You don't have that.")
+            return
+        # For each match in the inventory, read its text
+        for match in matches:
+            if match.get_take() == "true" and isinstance(match, Readable):
+                print(f"The {Fore.LIGHTWHITE_EX}{match.get_name()}{Fore.RESET} reads:"
+                      f"\n{match.text}")
+            else:
+                print(f"You cannot read that {match.get_name()}!")
+
     # Swing a weapon at an enemy, dealing it damage
     def swing(self, args, enemy: Enemy):
         # If no weapon or enemy was specified
@@ -251,7 +275,14 @@ class PlayerEntity:
                     self.combat = True
                     print(f"{Fore.RED}You are now in combat.{Fore.RESET}")
                 else:
+                    dropped = []
+                    for item in enemy.get_inventory().get_items():
+                        if item.get_take() == "true":
+                            self.get_current_scene().get_items().append(item)
+                            enemy.get_inventory().get_items().remove(item)
+                            dropped.append(item.get_name())
                     print(f"The {enemy.get_name()} is now dead.")
+                    print(f'It dropped a {", a ".join(dropped)}.') if len(dropped) > 0 else print("", end='')
                     enemy.set_name(f"Dead {enemy.get_name()}")
                     if self.combat:
                         print(f"{Fore.GREEN}You are no longer in combat.{Fore.RESET}")

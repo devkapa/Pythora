@@ -1,3 +1,7 @@
+import time
+from difflib import SequenceMatcher
+from threading import Thread
+
 import colorama
 from colorama import Fore, Back
 
@@ -9,13 +13,16 @@ from movement.destination import Destination
 from movement.map import Map
 from movement.scene import Scene
 from player.playerentity import PlayerEntity
-from difflib import SequenceMatcher
 
 # Initialise ANSI escape colour codes for Windows
 colorama.init()
 
 # Create map global variable
 global_map: Map
+
+combat = False
+combat_time = 0
+u_input: str = ""
 
 
 def start_game(game_map: Map):
@@ -39,14 +46,26 @@ def start_game(game_map: Map):
 
     print(look(player))
     verbs_wrong = 0
-    combat = False
+
+    global combat
 
     # While the player is alive, keep the game running
     while player.get_health() > 0:
 
-        # Colourise the user input
-        print("> " + Fore.LIGHTGREEN_EX, end="")
-        u_input = input()
+        timer = Thread(target=combat_timer)
+        await_input = Thread(target=user_input)
+
+        timer.start()
+        await_input.start()
+
+        await_input.join()
+
+        global combat_time
+
+        if combat_time >= 15:
+            print(f"{Fore.RED}You were in combat, and took too long to fight back!{Fore.RESET}")
+            combat = False
+            break
 
         # Reset colour of succeeding text
         print(Fore.RESET, end="")
@@ -54,11 +73,6 @@ def start_game(game_map: Map):
         # Convert and trim player input to lowercase, and find the directive verb in the input
         command = u_input.lower().strip()
         verb = get_verb(command, player)
-
-        # If the player tried to bail from a fight, kill them
-        if combat and not any(verb == v for v in ["kill", "attack", "knife", "stab", "hit", "murder"]):
-            print(f"{Fore.RED}You were in combat, and didn't fight back!{Fore.RESET}")
-            break
 
         # If there was no directive verb, ignore input and print error.
         # When the user exceeds 10 invalid inputs, kick them from the game.
@@ -83,17 +97,28 @@ def start_game(game_map: Map):
                 # Print the setting of the player's current scene
                 print(look(player))
             case ("north" | "east" | "south" | "west" | "up" | "down"):
+                if player.combat:
+                    print(f"{Fore.RED}You were in combat, and didn't fight back!{Fore.RESET}")
+                    break
                 # Move in the respective compass direction
                 move(verb, player)
             case ("move" | "go" | "walk"):
+                if player.combat:
+                    print(f"{Fore.RED}You were in combat, and didn't fight back!{Fore.RESET}")
+                    break
                 # Find the compass direction the user wants to move in
                 # If it exists, move the player there
                 direction = get_verb(args, player)
-                if direction is not None:
+                if direction in ["north", "east", "south", "west", "up", "down"]:
                     move(direction, player)
                 else:
-                    print("What direction do you want to move in?")
-                    print("Syntax: move [north/east/south/west/up/down]")
+                    if isinstance(direction, Scene):
+                        for x in player.get_current_scene().get_destinations():
+                            if direction is global_map.find_scene(x.get_coordinate()):
+                                move(x.get_direction(), player)
+                    else:
+                        print("What direction do you want to move in?")
+                        print("Syntax: move [north/east/south/west/up/down]")
             case "quit":
                 # Quit the game / kill the player
                 break
@@ -151,6 +176,8 @@ def start_game(game_map: Map):
             case ("eat" | "consume" | "drink"):
                 # Eat an item in the player's inventory
                 player.eat(args)
+            case "read":
+                player.read(args)
             case ("kill" | "attack" | "knife" | "stab" | "hit" | "murder"):
                 # Attack an enemy in the current scene, using a weapon
                 # in the player's inventory
@@ -170,6 +197,22 @@ def start_game(game_map: Map):
     # Once the player is dead (health is below or equal to 0) and
     # the while loop has ended, print the death message
     print(deathMessage)
+
+
+def combat_timer():
+    global combat, combat_time
+    while combat:
+        time.sleep(1)
+        combat_time += 1
+    else:
+        combat_time = 0
+
+
+def user_input():
+    global u_input, combat
+    # Colourise the user input
+    print("> " + Fore.LIGHTGREEN_EX, end="")
+    u_input = input()
 
 
 # Filter through a string to check if it contains or is similar to a verb
@@ -288,7 +331,7 @@ def similar(a, b):
 # String list of verbs which can be used to make decisions and movements in the game
 verbs = ["quit", "go", "take", "pick", "pickup", "drop", "move", "inventory", "inv", "what", "help",
          "kill", "attack", "look", "north", "east", "south", "west", "up", "down", "knife", "steal",
-         "stab", "hit", "murder", "items", "walk", "eat", "consume", "drink", "hp", "health",
+         "stab", "hit", "murder", "items", "walk", "eat", "consume", "drink", "hp", "health", "read",
          "put", "place", "insert", "remove", "backpack", "bp", "map", "action", "cmd", "command"]
 
 # The coloured message printed when the player has died/game is ended

@@ -88,12 +88,16 @@
                 <down>If you put a hole in this floor, you would get to the ocean, you would also have to pay a hefty fine.</down>
             </directions>
             <setting>
-                You walk through the gates, hopefully you paid for your ticket.
+                You walk through the gates, paying for a ticket to a nearby ferry to avoid suspicion.
                 There's a doorway to the boats on your north.
             </setting>
             <items>
-                <item type="object">
+                <item type="readable">
                     <name>Ticket</name>
+                    <text>
+                        Feb 22, 2137
+                        ONE-WAY Ticket to Arch Island
+                    </text>
                     <stats mass="1" damage="0"/>
                     <take bool="true"/>
                 </item>
@@ -402,6 +406,14 @@
                     <stats damage="5" health="35" mass="10"/>
                     <take bool="true"/>
                     <blocking>north,east</blocking>
+                    <inventory max-mass="10">
+                        <item type="readable">
+                            <name>Sticky Note</name>
+                            <text>Safe Password: f3l0n</text>
+                            <stats mass="1" damage="0"/>
+                            <take bool="true"/>
+                        </item>
+                    </inventory>
                 </item>
                 <item type="enemy">
                     <name>Buff Robot Bodyguard</name>
