@@ -45,7 +45,6 @@ def start_game(game_map: Map):
     print(game_map.get_splash())
 
     print(look(player))
-    verbs_wrong = 0
 
     global combat
 
@@ -78,15 +77,7 @@ def start_game(game_map: Map):
         # When the user exceeds 10 invalid inputs, kick them from the game.
         if verb is None:
             print(f"I don't know what you mean by \"{command}\".")
-            verbs_wrong += 1
-            if verbs_wrong < 10:
-                print(f"Number of wrong inputs: {verbs_wrong}")
-                continue
-            else:
-                print("You input in too many wrong inputs. Get out.")
-                break
-        else:
-            verbs_wrong -= 1 if verbs_wrong > 0 else 0
+            continue
 
         # Get all input arguments excluding the directive verb
         args = command.replace(verb, "").strip() if isinstance(verb, str) else ""
