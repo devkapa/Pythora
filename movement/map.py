@@ -127,6 +127,8 @@ def get_map(path):
         directions_attribs = scene_directions.attrib
         directions = []
 
+        scene_pwd = False if scene.attrib.get("pwd") is None else scene.attrib.get("pwd")
+
         scene_coordinates = Coordinate(int(directions_attribs.get("x")), int(directions_attribs.get("y")),
                                        int(directions_attribs.get("z")))
 
@@ -188,7 +190,7 @@ def get_map(path):
                         items.append(Weapon(item_name, item_take_bool, item_mass, item_damage, item_event))
 
         # Add the scene to a list
-        scenes.append(Scene(scene_coordinates, scene_name, scene_setting, directions, items))
+        scenes.append(Scene(scene_coordinates, scene_name, scene_setting, directions, items, scene_pwd))
 
     # Return a new Map with its name, splash, scenes and player configuration
     return Map(map_name, map_splash, scenes, player_stats)

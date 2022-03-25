@@ -11,14 +11,16 @@ class Scene:
     setting = None
     destinations: list[Destination] = []
     items: list[Object] = []
+    pin = False
 
     # Define the constructor to be called when a new Scene object is created
-    def __init__(self, coordinate, name, setting, destinations, items):
+    def __init__(self, coordinate, name, setting, destinations, items, pin):
         self.coordinate = coordinate
         self.name = name
         self.setting = setting
         self.destinations = destinations
         self.items = items
+        self.pin = pin
 
     # Getters
     def get_coordinate(self) -> Coordinate:

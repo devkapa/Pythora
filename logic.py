@@ -7,6 +7,7 @@ from items.food import Food
 from items.object import Object
 from movement.destination import Destination
 from movement.map import Map
+from movement.scene import Scene
 from player.playerentity import PlayerEntity
 from difflib import SequenceMatcher
 
@@ -27,7 +28,7 @@ def start_game(game_map: Map):
         print("Error initialising map.")
         return
     else:
-        print(f"\n{Back.WHITE}{Fore.BLACK}{game_map.get_name()}{Back.RESET}{Fore.RESET}")
+        print(f"\n{Back.WHITE}{Fore.BLACK}{game_map.get_name()}{Fore.RESET}{Back.RESET}")
 
     # Initialise a new player with the health, inventory and starting position as defined in map file
     map_player = global_map.get_player()
@@ -52,7 +53,7 @@ def start_game(game_map: Map):
 
         # Convert and trim player input to lowercase, and find the directive verb in the input
         command = u_input.lower().strip()
-        verb = get_verb(command)
+        verb = get_verb(command, player)
 
         # If the player tried to bail from a fight, kill them
         if combat and not any(verb == v for v in ["kill", "attack", "knife", "stab", "hit", "murder"]):
@@ -74,7 +75,7 @@ def start_game(game_map: Map):
             verbs_wrong -= 1 if verbs_wrong > 0 else 0
 
         # Get all input arguments excluding the directive verb
-        args = command.replace(verb, "").strip()
+        args = command.replace(verb, "").strip() if isinstance(verb, str) else ""
 
         # Execute code dependent on the directive verb
         match verb:
@@ -87,7 +88,7 @@ def start_game(game_map: Map):
             case ("move" | "go" | "walk"):
                 # Find the compass direction the user wants to move in
                 # If it exists, move the player there
-                direction = get_verb(args)
+                direction = get_verb(args, player)
                 if direction is not None:
                     move(direction, player)
                 else:
@@ -158,6 +159,11 @@ def start_game(game_map: Map):
                 else:
                     print("Specify what you want to attack with.")
                     print("Syntax: attack [enemy] with [weapon]")
+            case _:
+                if isinstance(verb, Scene):
+                    for x in player.get_current_scene().get_destinations():
+                        if verb is global_map.find_scene(x.get_coordinate()):
+                            move(x.get_direction(), player)
 
         combat = True if player.combat else False
 
@@ -167,12 +173,26 @@ def start_game(game_map: Map):
 
 
 # Filter through a string to check if it contains or is similar to a verb
-def get_verb(args: str):
+def get_verb(args: str, player: PlayerEntity):
+    scene_names = get_scene_names(player)
     args = args.split()
-    for v in verbs:
-        for a in args:
+    for a in args:
+        for v in verbs:
             if similar(v, a) >= 0.9:
                 return v
+        for s in scene_names:
+            name = s.get_name().lower().split()
+            for n in name:
+                if similar(n, a) >= 0.9:
+                    return s
+
+
+def get_scene_names(player: PlayerEntity):
+    scene_names = []
+    for x in player.get_current_scene().get_destinations():
+        if global_map.find_scene(x.get_coordinate()) is not None:
+            scene_names.append(global_map.find_scene(x.get_coordinate()))
+    return scene_names
 
 
 # Returns a string, containing the name, setting and items of the scene the player is in
@@ -243,8 +263,20 @@ def move(direction, player: PlayerEntity):
                 print("There is an enemy blocking your path.")
                 return
     # Set the current scene to the destination scene, and print the setting of the new scene.
-    player.set_current_scene(global_map.find_scene(destination.get_coordinate()))
+    scene = global_map.find_scene(destination.get_coordinate())
+    if scene is None:
+        print("Athora encountered a problem. The map is not configured properly.")
+        return
+    if scene.pin is not False:
+        print(f"{Fore.LIGHTWHITE_EX}{scene.name}{Fore.RESET} requires a passcode to enter: {Fore.GREEN}", end='')
+        pin = input()
+        print(Fore.RESET, end="")
+        if pin != scene.pin:
+            print(f"{Fore.LIGHTRED_EX}That is not the right passcode.{Fore.RESET}")
+            return
+    player.set_current_scene(scene)
     print(look(player))
+    scene.pin = False
 
 
 # Check how similar two strings are

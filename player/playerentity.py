@@ -13,6 +13,7 @@ from difflib import SequenceMatcher
 # Initialise ANSI escape colour codes for Windows
 colorama.init()
 
+
 # Check how similar two strings are
 def similar(a, b):
     return SequenceMatcher(None, a, b).ratio()
@@ -23,8 +24,8 @@ def similar(a, b):
 def get_match(args, item_list):
     items = []
     for item in item_list:
-        arg_split = [re.sub(r'[^\w ]', '', x) for x in args.split()]
-        name_split = [re.sub(r'[^\w ]', '', x) for x in item.get_name().lower().split()]
+        arg_split = sum([re.split(r'[^\w ]', x) for x in args.split()], [])
+        name_split = sum([re.split(r'[^\w ]', x) for x in item.get_name().lower().split()], [])
         for arg in arg_split:
             if any(similar(arg, x) > 0.75 for x in name_split):
                 items.append(item)
@@ -244,8 +245,9 @@ class PlayerEntity:
                 print(f"You attacked the {enemy.get_name()} with a {match.get_name()} for {match.get_damage()} damage.")
                 if enemy.is_alive():
                     self.change_health(-enemy.get_damage())
-                    print(f"It swings back at you, dealing {enemy.get_damage()} damage to you. Your health: {self.get_health()}"
-                          f"\nThe {enemy.get_name()} is now on {enemy.get_health()} HP.")
+                    print(
+                        f"It swings back at you, dealing {enemy.get_damage()} damage to you. Your health: {self.get_health()}"
+                        f"\nThe {enemy.get_name()} is now on {enemy.get_health()} HP.")
                     self.combat = True
                     print(f"{Fore.RED}You are now in combat.{Fore.RESET}")
                 else:
