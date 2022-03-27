@@ -2,7 +2,6 @@ from items.container import Container
 from items.enemy import Enemy
 from items.food import Food
 from items.readable import Readable
-from items.weapon import Weapon
 from player.inventory import Inventory
 from movement.scene import Scene
 
@@ -100,11 +99,6 @@ class PlayerEntity:
             if isinstance(obj, Enemy):
                 return obj
 
-    # Deduct health from the player from a weapon consequence
-    def execute_event(self, weapon: Weapon):
-        self.change_health(-weapon.get_damage())
-        print(f'{weapon.event} -{weapon.get_damage()} HP')
-
     # Add an item from the player's inventory to a container in the player's inventory
     def add_item(self, args: str, container: Container):
         # If no item or container was specified
@@ -127,10 +121,10 @@ class PlayerEntity:
                 if container.get_self_mass() + match.get_mass() <= container.get_max_mass():
                     container.get_contents().append(match)
                     self.inventory.get_items().remove(match)
-                    print(f"You put {match.get_name()} into {container.get_name()}. "
+                    print(f"You put {Fore.LIGHTWHITE_EX}{match.get_name()}{Fore.RESET} into {Fore.LIGHTWHITE_EX}{container.get_name()}{Fore.RESET}. "
                           f"Now it deals {container.get_damage()} damage.")
                 else:
-                    print(f"The {container.get_name()} is too full to fit {match.get_name()}")
+                    print(f"The {Fore.LIGHTWHITE_EX}{container.get_name()}{Fore.RESET} is too full to fit {Fore.LIGHTWHITE_EX}{match.get_name()}{Fore.RESET}")
             else:
                 print("You cannot put a container inside a container.")
 
@@ -148,13 +142,13 @@ class PlayerEntity:
         # Get a list of items in the container that match the player's query
         matches = get_match(args, container.get_contents())
         if len(matches) < 1:
-            print(f"That item isn't in the {container.get_name()}.")
+            print(f"That item isn't in the {Fore.LIGHTWHITE_EX}{container.get_name()}{Fore.RESET}.")
             return
         # For each item found, remove it from the container and add to inventory
         for match in matches:
             container.get_contents().remove(match)
             self.inventory.get_items().append(match)
-            print(f"You took {match.get_name()} out of {container.get_name()}. "
+            print(f"You took {Fore.LIGHTWHITE_EX}{match.get_name()}{Fore.RESET} out of {Fore.LIGHTWHITE_EX}{container.get_name()}{Fore.RESET}. "
                   f"Now it deals {container.get_damage()} damage.")
 
     # Pick up an item in the player's scene
@@ -172,18 +166,21 @@ class PlayerEntity:
         # If the item can be taken and is not an enemy, then add it
         # to the player's inventory and remove it from the scene
         for match in matches:
-            if match.get_take() == "true" and not isinstance(match, Enemy):
+            if match.get_take()[0] == "true" and not isinstance(match, Enemy):
                 if self.inventory.get_mass() + match.get_mass() <= self.inventory.get_max_mass():
                     self.inventory.get_items().append(match)
                     self.get_current_scene().get_items().remove(match)
-                    print(f"You picked up {match.get_name()}.")
+                    if match.get_take()[1] is not None:
+                        print(match.get_take()[1])
+                    print(f"You picked up {Fore.LIGHTWHITE_EX}{match.get_name()}{Fore.RESET}.")
                 else:
                     print("Your inventory is too full to pick that up!")
             else:
-                if isinstance(match, Weapon):
-                    self.execute_event(match)
+                if match.get_take()[0] == "consequence":
+                    self.change_health(-match.get_damage())
+                    print(f'{match.get_take()[1]} -{match.get_damage()} HP')
                 else:
-                    print(f"You can't pick up a {match.get_name()}!")
+                    print(f"You can't pick up a {Fore.LIGHTWHITE_EX}{match.get_name()}{Fore.RESET}!")
 
     # Remove/drop an item from player's inventory
     def drop(self, args: str):
@@ -201,7 +198,7 @@ class PlayerEntity:
         for match in matches:
             self.inventory.get_items().remove(match)
             self.get_current_scene().get_items().append(match)
-            print(f"Dropped {match.get_name()}.")
+            print(f"Dropped {Fore.LIGHTWHITE_EX}{match.get_name()}{Fore.RESET}.")
 
     # Eat an item in the player's inventory
     def eat(self, args):
@@ -218,15 +215,17 @@ class PlayerEntity:
         # For each match in the inventory, add saturation of the food to the player's health
         # and remove it from their inventory, as long it is an actual food and edible.
         for match in matches:
-            if match.get_take() == "true" and isinstance(match, Food):
+            if match.get_take()[0] == "true" and isinstance(match, Food):
                 self.change_health(match.get_saturation())
                 self.inventory.get_items().remove(match)
-                print(f"You ate {match.get_name()}. It tasted good. You gained {match.get_saturation()} HP."
+                if match.get_take()[1] is not None:
+                    print(match.get_take()[1])
+                print(f"You ate {Fore.LIGHTWHITE_EX}{match.get_name()}{Fore.RESET}, and gained {match.get_saturation()} HP."
                       f"\nYou are now on {self.health} HP.")
             else:
-                print(f"You cannot eat a {match.get_name()}!")
+                print(f"You cannot eat a {Fore.LIGHTWHITE_EX}{match.get_name()}{Fore.RESET}!")
 
-    # Eat an item in the player's inventory
+    # Read an item in the player's inventory
     def read(self, args):
         # If no item was specified
         if args == "":
@@ -240,11 +239,11 @@ class PlayerEntity:
             return
         # For each match in the inventory, read its text
         for match in matches:
-            if match.get_take() == "true" and isinstance(match, Readable):
+            if match.get_take()[0] == "true" and isinstance(match, Readable):
                 print(f"The {Fore.LIGHTWHITE_EX}{match.get_name()}{Fore.RESET} reads:"
                       f"\n{match.text}")
             else:
-                print(f"You cannot read that {match.get_name()}!")
+                print(f"You cannot read that {Fore.LIGHTWHITE_EX}{match.get_name()}{Fore.RESET}!")
 
     # Swing a weapon at an enemy, dealing it damage
     def swing(self, args, enemy: Enemy):
@@ -266,26 +265,27 @@ class PlayerEntity:
         for match in matches:
             if enemy.is_alive():
                 enemy.change_health(-match.get_damage())
-                print(f"You attacked the {enemy.get_name()} with a {match.get_name()} for {match.get_damage()} damage.")
+                print(f"You attacked the {Fore.LIGHTWHITE_EX}{enemy.get_name()}{Fore.RESET} with a {Fore.LIGHTWHITE_EX}{match.get_name()}{Fore.RESET} for {match.get_damage()} damage.")
                 if enemy.is_alive():
                     self.change_health(-enemy.get_damage())
                     print(
                         f"It swings back at you, dealing {enemy.get_damage()} damage to you. Your health: {self.get_health()}"
-                        f"\nThe {enemy.get_name()} is now on {enemy.get_health()} HP.")
+                        f"\nThe {Fore.LIGHTWHITE_EX}{enemy.get_name()}{Fore.RESET} is now on {enemy.get_health()} HP.")
                     self.combat = True
                     print(f"{Fore.RED}You are now in combat.{Fore.RESET}")
                 else:
                     dropped = []
-                    for item in enemy.get_inventory().get_items():
-                        if item.get_take() == "true":
+                    enemy_inventory = [x for x in enemy.get_inventory().get_items()]
+                    for item in enemy_inventory:
+                        if item.get_take()[0] == "true":
                             self.get_current_scene().get_items().append(item)
                             enemy.get_inventory().get_items().remove(item)
                             dropped.append(item.get_name())
-                    print(f"The {enemy.get_name()} is now dead.")
-                    print(f'It dropped a {", a ".join(dropped)}.') if len(dropped) > 0 else print("", end='')
+                    print(f"The {Fore.LIGHTWHITE_EX}{enemy.get_name()}{Fore.RESET} is now dead.")
+                    print(f'It dropped a {Fore.LIGHTWHITE_EX}{f"{Fore.RESET}, a {Fore.LIGHTWHITE_EX}".join(dropped)}{Fore.RESET}.') if len(dropped) > 0 else print("", end='')
                     enemy.set_name(f"Dead {enemy.get_name()}")
                     if self.combat:
                         print(f"{Fore.GREEN}You are no longer in combat.{Fore.RESET}")
                     self.combat = False
             else:
-                print(f"That {enemy.get_name()} is already dead.")
+                print(f"That {Fore.LIGHTWHITE_EX}{enemy.get_name()}{Fore.RESET} is already dead.")

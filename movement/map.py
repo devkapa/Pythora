@@ -11,7 +11,6 @@ from items.enemy import Enemy
 from items.food import Food
 from items.object import Object
 from items.readable import Readable
-from items.weapon import Weapon
 from movement.coordinate import coordinate_from_direction, Coordinate
 from movement.destination import Destination
 from movement.scene import Scene
@@ -219,18 +218,21 @@ def create_item(item, items):
     item_name = item.find("name").text
     item_stats = item.find("stats")
     item_take = item.find("take")
-    item_take_bool = item_take.attrib.get("bool")
+    item_take_tuple = (
+        item_take.attrib.get("bool"),
+        textwrap.dedent(item_take.text).strip() if item_take.text is not None else None
+    )
     item_mass = int(item_stats.attrib.get("mass"))
     item_damage = int(item_stats.attrib.get("damage"))
     match item.attrib.get("type"):
         case "food":
             item_saturation = int(item_stats.attrib.get("saturation"))
-            items.append(Food(item_name, item_take_bool, item_mass, item_damage, item_saturation))
+            items.append(Food(item_name, item_take_tuple, item_mass, item_damage, item_saturation))
         case "container":
             item_max_mass = int(item_stats.attrib.get("max-mass"))
-            items.append(Container(item_name, item_take_bool, item_mass, item_damage, item_max_mass, []))
+            items.append(Container(item_name, item_take_tuple, item_mass, item_damage, item_max_mass, []))
         case "object":
-            items.append(Object(item_name, item_take_bool, item_mass, item_damage))
+            items.append(Object(item_name, item_take_tuple, item_mass, item_damage))
         case "enemy":
             item_blocking_list = []
             item_inventory = []
@@ -246,12 +248,7 @@ def create_item(item, items):
                 for i in item_inventory_items:
                     create_item(i, item_inventory)
             items.append(
-                Enemy(item_name, item_take_bool, item_mass, item_damage, item_health, item_blocking_list, Inventory(item_inventory, item_inventory_max_mass)))
-        case "weapon":
-            item_event = ""
-            if item_take.text is not None:
-                item_event = textwrap.dedent(item_take.text).strip()
-            items.append(Weapon(item_name, item_take_bool, item_mass, item_damage, item_event))
+                Enemy(item_name, item_take_tuple, item_mass, item_damage, item_health, item_blocking_list, Inventory(item_inventory, item_inventory_max_mass)))
         case "readable":
             item_text = textwrap.dedent(item.find("text").text).strip()
-            items.append(Readable(item_name, item_take_bool, item_mass, item_damage, item_text))
+            items.append(Readable(item_name, item_take_tuple, item_mass, item_damage, item_text))

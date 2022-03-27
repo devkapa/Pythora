@@ -1,7 +1,7 @@
 class Object:
 
     name: str = None
-    take: str = None
+    take: tuple = None
     mass: int = None
     damage: int = None
 
@@ -25,5 +25,5 @@ class Object:
     def get_damage(self) -> int:
         return self.damage
 
-    def get_take(self):
+    def get_take(self) -> tuple:
         return self.take

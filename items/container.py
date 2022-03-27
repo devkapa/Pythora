@@ -36,4 +36,3 @@ class Container(Object):
         real_mass = self.get_mass() - super().get_mass()
         return real_mass if real_mass > 0 else 0
 
-
