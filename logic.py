@@ -241,7 +241,7 @@ def look(player: PlayerEntity):
         scene_objects_names = []
         for obj in scene_objects:
             scene_objects_names.append(obj.get_name())
-        items = f'There is a {", a ".join(scene_objects_names)} here.'
+        items = f'There is a {Fore.LIGHTWHITE_EX}{f"{Fore.RESET}, a {Fore.LIGHTWHITE_EX}".join(scene_objects_names)}{Fore.RESET} here. '
     return f"{Fore.LIGHTWHITE_EX}{player.get_current_scene().get_name()}{Fore.RESET}" \
            f"{player.get_current_scene().get_setting()}" \
            f"{items}" \

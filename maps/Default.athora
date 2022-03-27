@@ -162,11 +162,12 @@
             <setting>
                 Approaching the front of the yacht reveals a boat guard, who is very nicely equipped to disable you in one swift stroke.
                 Because he's protecting such an important person, the guard has a variety of deadly weapons.
+                Hmm, perhaps you can steal one of them?
             </setting>
             <items>
                 <item type="enemy">
                     <name>Boat Guard</name>
-                    <stats mass="10" damage="10" health="10"/>
+                    <stats mass="10" damage="10" health="20"/>
                     <take bool="true"/>
                     <blocking/>
                 </item>
