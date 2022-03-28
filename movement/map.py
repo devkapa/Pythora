@@ -1,9 +1,11 @@
 import os
+import re
 import xml.etree.ElementTree as elementTree
 import textwrap
 from os import listdir
 from os.path import isfile, join
 import webbrowser
+from difflib import SequenceMatcher
 from colorama import Fore
 
 from items.container import Container
@@ -186,11 +188,14 @@ def choose_map(maps_dir):
             return
 
         # Display available maps to player
-        print("Choose a map to play, or \"exit\":")
+        print("Choose a map to play, or \"quit\":")
+
+        file_names = []
 
         for file in files:
             game_map = elementTree.parse(f'{maps_dir}{file}')
             print(f'{files.index(file)}: {game_map.getroot().attrib.get("name")} ({file})')
+            file_names.append(f'{files.index(file)}: {game_map.getroot().attrib.get("name")} ({file})')
 
         print("> " + Fore.LIGHTGREEN_EX, end="")
         u_input = input()
@@ -202,15 +207,23 @@ def choose_map(maps_dir):
 
         # If the input value is a valid integer and present in the map list, return that map's file path
         try:
-            val = int(u_input)
-            if val >= len(files):
-                print("That is not an option in the list of maps.")
-                continue
-            else:
-                return maps_dir + files[val]
-        except ValueError:
-            print("Enter a valid number")
+            for file in files:
+                for name in file_names:
+                    names = sum([re.split(r'[^\w ]', x) for x in name.lower().split()], [])
+                    inputs = sum([re.split(r'[^\w ]', x) for x in u_input.lower().split()], [])
+                    for n in names:
+                        for i in inputs:
+                            if similar(n, i) > 0.9:
+                                return maps_dir + file
+            print(f"{Fore.LIGHTRED_EX}That is not an option in the list of maps.{Fore.RESET}\n")
             continue
+        except ValueError:
+            print(f"{Fore.LIGHTRED_EX}Enter a valid number.{Fore.RESET}\n")
+            continue
+
+
+def similar(a, b):
+    return SequenceMatcher(None, a, b).ratio()
 
 
 def create_item(item, items):

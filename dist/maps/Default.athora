@@ -298,7 +298,7 @@
                     <name>Robot Guard</name>
                     <stats mass="10" damage="5" health="10"/>
                     <take bool="true"/>
-                    <blocking>east,north</blocking>
+                    <blocking>east,north,up</blocking>
                 </item>
             </items>
         </scene>

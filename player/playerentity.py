@@ -1,3 +1,4 @@
+import logic
 from items.container import Container
 from items.enemy import Enemy
 from items.food import Food
@@ -265,6 +266,7 @@ class PlayerEntity:
         for match in matches:
             if enemy.is_alive():
                 enemy.change_health(-match.get_damage())
+                logic.reset_timer()
                 print(f"You attacked the {Fore.LIGHTWHITE_EX}{enemy.get_name()}{Fore.RESET} with a {Fore.LIGHTWHITE_EX}{match.get_name()}{Fore.RESET} for {match.get_damage()} damage.")
                 if enemy.is_alive():
                     self.change_health(-enemy.get_damage())

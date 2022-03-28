@@ -193,10 +193,16 @@ def start_game(game_map: Map):
 def combat_timer():
     global combat, combat_time
     while combat:
-        time.sleep(1)
+        start_time = time.time()
+        time.sleep(1 - (time.time() - start_time))
         combat_time += 1
     else:
         combat_time = 0
+
+
+def reset_timer():
+    global combat_time
+    combat_time = 0
 
 
 def user_input():
