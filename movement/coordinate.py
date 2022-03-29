@@ -23,15 +23,31 @@ class Coordinate:
 # object with either the x, y or z value shifted in that direction
 def coordinate_from_direction(x, y, z, direction):
     match direction:
-        case "north":
+        case ("north" | "forward"):
             return Coordinate(x + 1, y, z)
-        case "south":
+        case ("south" | "backward"):
             return Coordinate(x - 1, y, z)
-        case "east":
+        case ("east" | "right"):
             return Coordinate(x, y + 1, z)
-        case "west":
+        case ("west" | "left"):
             return Coordinate(x, y - 1, z)
         case "up":
             return Coordinate(x, y, z + 1)
         case "down":
             return Coordinate(x, y, z - 1)
+
+
+def convert_direction(direction):
+    match direction:
+        case ("north" | "forward"):
+            return "north"
+        case ("south" | "backward"):
+            return "south"
+        case ("east" | "right"):
+            return "east"
+        case ("west" | "left"):
+            return "west"
+        case "up":
+            return "up"
+        case "down":
+            return "down"

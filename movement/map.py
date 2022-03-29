@@ -140,7 +140,8 @@ def get_map(path):
             if any(x.tag == direction for x in scene_directions):
                 direction_message = scene_directions.find(direction).text
                 direction_health = scene_directions.find(direction).attrib.get("health")
-                directions.append(Destination(direction, None, textwrap.dedent(direction_message).strip(), direction_health))
+                directions.append(Destination(direction, None, textwrap.dedent(direction_message).strip(),
+                                              direction_health))
             else:
                 direction_coordinate = coordinate_from_direction(int(directions_attribs.get("x")),
                                                                  int(directions_attribs.get("y")),
@@ -246,7 +247,8 @@ def create_item(item, items):
             item_inventory_items = item.find("inventory").findall("item")
             for i in item_inventory_items:
                 create_item(i, item_inventory)
-            items.append(Container(item_name, item_take_tuple, item_damage, Inventory(item_inventory, item_inventory_slots)))
+            items.append(Container(item_name, item_take_tuple, item_damage,
+                                   Inventory(item_inventory, item_inventory_slots)))
         case "object":
             items.append(Object(item_name, item_take_tuple, item_damage))
         case "enemy":
@@ -264,7 +266,8 @@ def create_item(item, items):
                 for i in item_inventory_items:
                     create_item(i, item_inventory)
             items.append(
-                Enemy(item_name, item_take_tuple, item_damage, item_health, item_blocking_list, Inventory(item_inventory, item_inventory_slots)))
+                Enemy(item_name, item_take_tuple, item_damage, item_health,
+                      item_blocking_list, Inventory(item_inventory, item_inventory_slots)))
         case "readable":
             item_text = textwrap.dedent(item.find("text").text).strip()
             items.append(Readable(item_name, item_take_tuple, item_damage, item_text))

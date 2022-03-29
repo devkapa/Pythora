@@ -11,6 +11,7 @@ from items.food import Food
 from items.object import Object
 from items.readable import Readable
 from movement.destination import Destination
+from movement.coordinate import convert_direction
 from movement.map import Map
 from movement.scene import Scene
 from player.playerentity import PlayerEntity
@@ -88,7 +89,7 @@ def start_game(game_map: Map):
             case "look":
                 # Print the setting of the player's current scene
                 print(look(player))
-            case ("north" | "east" | "south" | "west" | "up" | "down"):
+            case ("north" | "east" | "south" | "west" | "up" | "down" | "forward" | "backward" | "left" | "right"):
                 if player.combat:
                     print(f"{Fore.RED}You were in combat, and didn't fight back!{Fore.RESET}")
                     break
@@ -101,7 +102,8 @@ def start_game(game_map: Map):
                 # Find the compass direction the user wants to move in
                 # If it exists, move the player there
                 direction = get_verb(args, player)
-                if direction in ["north", "east", "south", "west", "up", "down"]:
+                if direction in ["north", "east", "south", "west", "up", "down",
+                                 "forward", "backward", "left", "right"]:
                     move(direction, player)
                 else:
                     if isinstance(direction, Scene):
@@ -250,7 +252,8 @@ def look(player: PlayerEntity):
         scene_objects_names = []
         for obj in scene_objects:
             scene_objects_names.append(obj.get_name())
-        items = f'There is a {Fore.LIGHTWHITE_EX}{f"{Fore.RESET}, a {Fore.LIGHTWHITE_EX}".join(scene_objects_names)}{Fore.RESET} here. '
+        items = f'There is a {Fore.LIGHTWHITE_EX}{f"{Fore.RESET}, a {Fore.LIGHTWHITE_EX}".join(scene_objects_names)}' \
+                f'{Fore.RESET} here. '
     return f"{Fore.LIGHTWHITE_EX}{player.get_current_scene().get_name()}{Fore.RESET}" \
            f"{player.get_current_scene().get_setting()}" \
            f"{items}" \
@@ -287,7 +290,7 @@ def possible_cmds(player: PlayerEntity):
 # Move the player in a compass direction
 def move(direction, player: PlayerEntity):
     # Get the Destination object of the compass direction
-    destination: Destination = player.get_current_scene().get_destination(direction)
+    destination: Destination = player.get_current_scene().get_destination(convert_direction(direction))
 
     # If there is no scene corresponding to the direction, print the message of the direction
     if destination.get_coordinate() is None:
@@ -336,7 +339,8 @@ def open_container(container: Container):
         print("That container doesn't seem to exist")
         print("Syntax: open [container]")
         return
-    items = f"{Fore.RESET}\n* {Fore.LIGHTWHITE_EX}".join([item.get_name() for item in container.get_contents().get_items()])
+    items = f"{Fore.RESET}\n* {Fore.LIGHTWHITE_EX}".join([item.get_name()
+                                                          for item in container.get_contents().get_items()])
     items = f"\n* {Fore.LIGHTWHITE_EX}" + items + Fore.RESET
     print(f'Opening the {Fore.LIGHTWHITE_EX}{container.get_name()}{Fore.RESET} reveals', end='')
     print(f': {items}' if len([item for item in container.get_contents().get_items()]) >= 1 else " no items inside.")
@@ -346,7 +350,8 @@ def open_container(container: Container):
 verbs = ["quit", "go", "take", "pick", "pickup", "drop", "move", "inventory", "inv", "what", "help",
          "kill", "attack", "look", "north", "east", "south", "west", "up", "down", "knife", "steal",
          "stab", "hit", "murder", "items", "walk", "eat", "consume", "drink", "hp", "health", "read",
-         "open", "put", "place", "insert", "remove", "backpack", "bp", "map", "action", "cmd", "command"]
+         "open", "put", "place", "insert", "remove", "backpack", "bp", "map", "action", "cmd", "command",
+         "forward", "backward", "left", "right"]
 
 # The coloured message printed when the player has died/game is ended
 deathMessage = f"""
