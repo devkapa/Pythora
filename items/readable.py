@@ -6,6 +6,6 @@ class Readable(Object):
 
     text = None
 
-    def __init__(self, name, take, mass, damage, text):
-        super().__init__(name, take, mass, damage)
+    def __init__(self, name, take, damage, text):
+        super().__init__(name, take, damage)
         self.text = text

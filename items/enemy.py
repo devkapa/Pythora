@@ -12,8 +12,8 @@ class Enemy(Object):
     inventory: Inventory
     blocking = []
 
-    def __init__(self, name, take, mass, damage, health, blocking, inventory):
-        super().__init__(name, take, mass, damage)
+    def __init__(self, name, take, damage, health, blocking, inventory):
+        super().__init__(name, take, damage)
         self.health = health
         self.blocking = blocking
         self.inventory = inventory

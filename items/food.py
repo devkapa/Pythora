@@ -6,8 +6,8 @@ class Food(Object):
 
     saturation = None
 
-    def __init__(self, name, take, mass, damage, saturation):
-        super().__init__(name, take, mass, damage)
+    def __init__(self, name, take, damage, saturation):
+        super().__init__(name, take, damage)
         self.saturation = saturation
 
     def get_saturation(self):

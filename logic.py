@@ -9,6 +9,7 @@ from items.container import Container
 from items.enemy import Enemy
 from items.food import Food
 from items.object import Object
+from items.readable import Readable
 from movement.destination import Destination
 from movement.map import Map
 from movement.scene import Scene
@@ -120,30 +121,32 @@ def start_game(game_map: Map):
                 for item in player.get_inventory().get_items():
                     if isinstance(item, Container):
                         # If there is a container in the player's inventory, list all of it's contents
-                        percent = round((item.get_self_mass() / item.get_max_mass()) * 100)
-                        inv += f'\n* {item.get_name()} ({percent}% full)'
-                        for obj in item.get_contents():
-                            inv += f'\n   - {obj.get_name()}'
+                        percent = item.get_contents().get_percent()
+                        inv += f'\n* {Fore.LIGHTWHITE_EX}{item.get_name()}{Fore.RESET} ({percent}% full)'
+                        for obj in item.get_contents().get_items():
+                            inv += f'\n   - {Fore.LIGHTWHITE_EX}{obj.get_name()}{Fore.RESET}'
                     else:
-                        inv += f'\n* {item.get_name()}'
+                        inv += f'\n* {Fore.LIGHTWHITE_EX}{item.get_name()}{Fore.RESET}'
                 # If the inventory is empty, let the player know
                 if inv == "":
                     inv = "Empty"
                     percent = 0
                 else:
-                    percent = round((player.get_inventory().get_mass() / player.get_inventory().get_max_mass()) * 100)
+                    percent = player.get_inventory().get_percent()
                 print(f'Backpack ({percent}% full): {inv}\nHealth: {player.get_health()}')
             case ("pickup" | "pick" | "take" | "steal"):
                 if "out" in args or "from" in args:
                     # If the player wants to take an item out of or from a container,
                     # then remove it from queried container
-                    player.remove_item(args, player.get_container(args))
+                    player.container_remove(args, player.get_container(args))
                 else:
                     # Otherwise, pick up a present item in the scene
                     player.pick_up(args)
             case "drop":
                 # Drop an item from the player's inventory
                 player.drop(args)
+            case "open":
+                open_container(player.get_container(args))
             case "map":
                 # Print a stylised map of the player's surroundings
                 global_map.print_map(player)
@@ -156,14 +159,14 @@ def start_game(game_map: Map):
                     print("Specify what you want to put that in.")
                     print("Syntax: put [item] in [container]")
                 else:
-                    player.add_item(args, player.get_container(args))
+                    player.container_add(args, player.get_container(args))
             case "remove":
                 # Take an item out of a container and add it to the player's inventory
                 if "out" in args or "from" in args:
                     print("Specify what you want to take that out of.")
                     print("Syntax: take [item] out of [container]")
                 else:
-                    player.remove_item(args, player.get_container(args))
+                    player.container_remove(args, player.get_container(args))
             case ("eat" | "consume" | "drink"):
                 # Eat an item in the player's inventory
                 player.eat(args)
@@ -271,9 +274,11 @@ def possible_cmds(player: PlayerEntity):
         cmds.append("eat")
     if any(isinstance(x, Object) for x in inv):
         cmds.append("drop")
+    if any(isinstance(x, Readable) for x in inv):
+        cmds.append("read")
     if any(isinstance(x, Container) for x in inv):
         cmds.append("put")
-        if any(isinstance(x, Container) and len(x.get_contents()) > 0 for x in inv):
+        if any(isinstance(x, Container) and len(x.get_contents().get_items()) > 0 for x in inv):
             cmds.append("remove")
     # Return the list joined with commas
     return "Actions you can do: " + ", ".join(cmds)
@@ -325,11 +330,23 @@ def similar(a, b):
     return SequenceMatcher(None, a, b).ratio()
 
 
+# The player constructor class
+def open_container(container: Container):
+    if container is None:
+        print("That container doesn't seem to exist")
+        print("Syntax: open [container]")
+        return
+    items = f"{Fore.RESET}\n* {Fore.LIGHTWHITE_EX}".join([item.get_name() for item in container.get_contents().get_items()])
+    items = f"\n* {Fore.LIGHTWHITE_EX}" + items + Fore.RESET
+    print(f'Opening the {Fore.LIGHTWHITE_EX}{container.get_name()}{Fore.RESET} reveals', end='')
+    print(f': {items}' if len([item for item in container.get_contents().get_items()]) >= 1 else " no items inside.")
+
+
 # String list of verbs which can be used to make decisions and movements in the game
 verbs = ["quit", "go", "take", "pick", "pickup", "drop", "move", "inventory", "inv", "what", "help",
          "kill", "attack", "look", "north", "east", "south", "west", "up", "down", "knife", "steal",
          "stab", "hit", "murder", "items", "walk", "eat", "consume", "drink", "hp", "health", "read",
-         "put", "place", "insert", "remove", "backpack", "bp", "map", "action", "cmd", "command"]
+         "open", "put", "place", "insert", "remove", "backpack", "bp", "map", "action", "cmd", "command"]
 
 # The coloured message printed when the player has died/game is ended
 deathMessage = f"""

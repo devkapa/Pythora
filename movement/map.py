@@ -111,7 +111,7 @@ def get_map(path):
     # Get player health, inventory and starting coordinates
     player = root.find("player").attrib
     player_coordinate = Coordinate(int(player.get("x")), int(player.get("y")), int(player.get("z")))
-    player_stats = [int(player.get("health")), Inventory([], int(player.get("max-inventory"))), player_coordinate]
+    player_stats = [int(player.get("health")), Inventory([], int(player.get("inventory-slots"))), player_coordinate]
 
     # Get all scene nodes in the map
     map_scenes = root.find("scenes").findall("scene")
@@ -202,7 +202,7 @@ def choose_map(maps_dir):
         print(Fore.RESET, end="")
 
         # If the player wishes to close the game, return a NoneType
-        if u_input == "quit" or u_input == "exit":
+        if similar(u_input, "quit") > 0.7:
             return None
 
         # If the input value is a valid integer and present in the map list, return that map's file path
@@ -235,33 +235,36 @@ def create_item(item, items):
         item_take.attrib.get("bool"),
         textwrap.dedent(item_take.text).strip() if item_take.text is not None else None
     )
-    item_mass = int(item_stats.attrib.get("mass"))
     item_damage = int(item_stats.attrib.get("damage"))
     match item.attrib.get("type"):
         case "food":
             item_saturation = int(item_stats.attrib.get("saturation"))
-            items.append(Food(item_name, item_take_tuple, item_mass, item_damage, item_saturation))
+            items.append(Food(item_name, item_take_tuple, item_damage, item_saturation))
         case "container":
-            item_max_mass = int(item_stats.attrib.get("max-mass"))
-            items.append(Container(item_name, item_take_tuple, item_mass, item_damage, item_max_mass, []))
+            item_inventory = []
+            item_inventory_slots = int(item.find("inventory").attrib.get("slots"))
+            item_inventory_items = item.find("inventory").findall("item")
+            for i in item_inventory_items:
+                create_item(i, item_inventory)
+            items.append(Container(item_name, item_take_tuple, item_damage, Inventory(item_inventory, item_inventory_slots)))
         case "object":
-            items.append(Object(item_name, item_take_tuple, item_mass, item_damage))
+            items.append(Object(item_name, item_take_tuple, item_damage))
         case "enemy":
             item_blocking_list = []
             item_inventory = []
-            item_inventory_max_mass = 0
+            item_inventory_slots = 0
             item_health = int(item_stats.attrib.get("health"))
             if item.find("blocking").text is not None:
                 item_blocking = item.find("blocking").text.split(",")
                 for i in item_blocking:
                     item_blocking_list.append(i)
             if item.find("inventory") is not None:
-                item_inventory_max_mass = item.find("inventory").attrib.get("max-mass")
+                item_inventory_slots = item.find("inventory").attrib.get("slots")
                 item_inventory_items = item.find("inventory").findall("item")
                 for i in item_inventory_items:
                     create_item(i, item_inventory)
             items.append(
-                Enemy(item_name, item_take_tuple, item_mass, item_damage, item_health, item_blocking_list, Inventory(item_inventory, item_inventory_max_mass)))
+                Enemy(item_name, item_take_tuple, item_damage, item_health, item_blocking_list, Inventory(item_inventory, item_inventory_slots)))
         case "readable":
             item_text = textwrap.dedent(item.find("text").text).strip()
-            items.append(Readable(item_name, item_take_tuple, item_mass, item_damage, item_text))
+            items.append(Readable(item_name, item_take_tuple, item_damage, item_text))
