@@ -4,7 +4,7 @@
 <map name="The Wrath of Felon">
 
     <!-- The player's starting health, inventory size and coordinate position -->
-    <player health="10" max-inventory="15" x="0" y="0" z="0"/>
+    <player health="10" inventory-slots="5" x="0" y="0" z="0"/>
 
     <!-- The message to be displayed when the map is loaded -->
     <splash>
@@ -65,17 +65,17 @@
             <items>
                 <item type="food">
                     <name>McDonald's Cheeseburger</name>
-                    <stats mass="2" damage="0" saturation="5"/>
+                    <stats damage="0" saturation="5"/>
                     <take bool="true"/>
                 </item>
                 <item type="food">
                     <name>Chicken Nuggets</name>
-                    <stats mass="2" damage="0" saturation="5"/>
+                    <stats damage="0" saturation="5"/>
                     <take bool="true"/>
                 </item>
                 <item type="food">
                     <name>Rotten Filet-o-fish</name>
-                    <stats mass="2" damage="0" saturation="-2"/>
+                    <stats damage="0" saturation="-2"/>
                     <take bool="true"/>
                 </item>
             </items>
@@ -98,7 +98,7 @@
                         Feb 22, 2137
                         ONE-WAY Ticket to Arch Island
                     </text>
-                    <stats mass="1" damage="0"/>
+                    <stats damage="0"/>
                     <take bool="true"/>
                 </item>
             </items>
@@ -128,14 +128,9 @@
             <items>
                 <item type="enemy">
                     <name>Porter Guard</name>
-                    <stats mass="10" damage="2" health="5"/>
+                    <stats damage="2" health="5"/>
                     <take bool="true"/>
                     <blocking>east</blocking>
-                </item>
-                <item type="container">
-                    <name>Suitcase</name>
-                    <stats mass="2" damage="1" max-mass="10"/>
-                    <take bool="true"/>
                 </item>
             </items>
         </scene>
@@ -162,17 +157,18 @@
             <setting>
                 Approaching the front of the yacht reveals a boat guard, who is very nicely equipped to disable you in one swift stroke.
                 Because he's protecting such an important person, the guard has a variety of deadly weapons.
+                Hmm, perhaps you can steal one of them?
             </setting>
             <items>
                 <item type="enemy">
                     <name>Boat Guard</name>
-                    <stats mass="10" damage="10" health="10"/>
+                    <stats damage="10" health="20"/>
                     <take bool="true"/>
                     <blocking/>
                 </item>
                 <item type="object">
                     <name>Pepper Spray</name>
-                    <stats mass="4" damage="5"/>
+                    <stats damage="5"/>
                     <take bool="true">
                         To your surprise, the Pepper Spray was quite loosely attached to the guard's belt.
                         You manage to swipe it from him without him realising.
@@ -180,7 +176,7 @@
                 </item>
                 <item type="object">
                     <name>Baton</name>
-                    <stats mass="4" damage="10"/>
+                    <stats damage="10"/>
                     <take bool="consequence">
                         Good luck with that, the guard has his baton holstered, he can't believe you'd do something that unintelligent.
                         He knocks you out permanently with his baton.
@@ -188,7 +184,7 @@
                 </item>
                 <item type="object">
                     <name>Gun</name>
-                    <stats mass="4" damage="15"/>
+                    <stats damage="15"/>
                     <take bool="consequence">
                         Nice try, the guard has his gun holstered, he pities your obtuse brain.
                         The last thing you see is the gun you so sneakily tried to steal, pointed at your face.
@@ -196,7 +192,7 @@
                 </item>
                 <item type="object">
                     <name>Taser</name>
-                    <stats mass="4" damage="10"/>
+                    <stats damage="10"/>
                     <take bool="consequence">
                         Good luck with that, the guard has his taser holstered, he marvels at your terrible judgement.
                         To put it simply, you get tasered to death.
@@ -219,12 +215,19 @@
             <items>
                 <item type="container">
                     <name>Suitcase</name>
-                    <stats mass="2" damage="1" max-mass="10"/>
+                    <stats damage="1"/>
                     <take bool="true"/>
+                    <inventory slots="3">
+                        <item type="object">
+                            <name>Clothes</name>
+                            <stats damage="0"/>
+                            <take bool="true"/>
+                        </item>
+                    </inventory>
                 </item>
                 <item type="object">
                     <name>Stack of Paper</name>
-                    <stats mass="8" damage="0"/>
+                    <stats damage="0"/>
                     <take bool="true"/>
                 </item>
             </items>
@@ -244,7 +247,7 @@
             <items>
                 <item type="enemy">
                     <name>Robot Guard</name>
-                    <stats mass="10" damage="5" health="10"/>
+                    <stats damage="5" health="10"/>
                     <take bool="true"/>
                     <blocking>east,up</blocking>
                 </item>
@@ -280,7 +283,7 @@
             <items>
                 <item type="object">
                     <name>Water Pistol</name>
-                    <stats mass="4" damage="10"/>
+                    <stats damage="10"/>
                     <take bool="true"/>
                 </item>
             </items>
@@ -296,9 +299,9 @@
             <items>
                 <item type="enemy">
                     <name>Robot Guard</name>
-                    <stats mass="10" damage="5" health="10"/>
+                    <stats damage="5" health="10"/>
                     <take bool="true"/>
-                    <blocking>east,north,up</blocking>
+                    <blocking>east,north</blocking>
                 </item>
             </items>
         </scene>
@@ -318,7 +321,7 @@
             <items>
                 <item type="object">
                     <name>Allen Key</name>
-                    <stats mass="1" damage="0"/>
+                    <stats damage="0"/>
                     <take bool="true"/>
                 </item>
             </items>
@@ -338,37 +341,37 @@
             <items>
                 <item type="food">
                     <name>Apple</name>
-                    <stats mass="2" damage="0" saturation="5"/>
+                    <stats damage="0" saturation="5"/>
                     <take bool="true"/>
                 </item>
                 <item type="food">
                     <name>Banana</name>
-                    <stats mass="2" damage="0" saturation="8"/>
+                    <stats damage="0" saturation="8"/>
                     <take bool="true"/>
                 </item>
                 <item type="food">
                     <name>Lettuce</name>
-                    <stats mass="3" damage="0" saturation="3"/>
+                    <stats damage="0" saturation="3"/>
                     <take bool="true"/>
                 </item>
                 <item type="food">
                     <name>Chocolate</name>
-                    <stats mass="1" damage="0" saturation="1"/>
+                    <stats damage="0" saturation="1"/>
                     <take bool="true"/>
                 </item>
                 <item type="food">
                     <name>Biscuits</name>
-                    <stats mass="2" damage="0" saturation="5"/>
+                    <stats damage="0" saturation="5"/>
                     <take bool="true"/>
                 </item>
                 <item type="food">
                     <name>Orange</name>
-                    <stats mass="2" damage="0" saturation="6"/>
+                    <stats damage="0" saturation="6"/>
                     <take bool="true"/>
                 </item>
                 <item type="food">
                     <name>Mentos</name>
-                    <stats mass="1" damage="0" saturation="0"/>
+                    <stats damage="0" saturation="0"/>
                     <take bool="true"/>
                 </item>
             </items>
@@ -406,21 +409,21 @@
             <items>
                 <item type="enemy">
                     <name>Felon Muks</name>
-                    <stats damage="5" health="35" mass="10"/>
+                    <stats damage="5" health="35"/>
                     <take bool="true"/>
                     <blocking>north,east</blocking>
-                    <inventory max-mass="10">
+                    <inventory slots="3">
                         <item type="readable">
                             <name>Sticky Note</name>
                             <text>Safe Password: f3l0n</text>
-                            <stats mass="1" damage="0"/>
+                            <stats damage="0"/>
                             <take bool="true"/>
                         </item>
                     </inventory>
                 </item>
                 <item type="enemy">
                     <name>Buff Robot Bodyguard</name>
-                    <stats mass="10" damage="5" health="15"/>
+                    <stats damage="5" health="15"/>
                     <take bool="true"/>
                     <blocking>north,east</blocking>
                 </item>
@@ -441,17 +444,17 @@
             <items>
                 <item type="object">
                     <name>Legendary Vial of Ink</name>
-                    <stats damage="1" mass="1"/>
+                    <stats damage="1"/>
                     <take bool="true"/>
                 </item>
                 <item type="object">
                     <name>Stacks of Cash</name>
-                    <stats mass="5" damage="1"/>
+                    <stats damage="1"/>
                     <take bool="true"/>
                 </item>
                 <item type="object">
                     <name>Felon's Laptop</name>
-                    <stats mass="10" damage="5"/>
+                    <stats damage="5"/>
                     <take bool="true"/>
                 </item>
             </items>

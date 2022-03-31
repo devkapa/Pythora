@@ -7,23 +7,14 @@ from movement.map import choose_map, get_map
 from colorama import Fore
 import requests
 
-# Initialise ANSI escape colour codes for Windows
+# Initialise ANSI escape colour codes foor Windows
 colorama.init()
 
 
 def main():
+
     # Version
     v = "py-v2.1.2"
-
-    # Check for updates from GitHub - if this version doesn't match the latest version
-    # If there is no internet, print error but run game
-    try:
-        response = requests.get("https://api.github.com/repos/Nulfy/Pythora/releases/latest")
-        if response.json()["tag_name"] != v:
-            print(f"{Fore.LIGHTCYAN_EX}There is a new version available! Download it at"
-                  f"\nhttps://github.com/Nulfy/Pythora/releases/latest{Fore.RESET}")
-    except(requests.ConnectionError, requests.Timeout):
-        print(f"{Fore.LIGHTCYAN_EX}No internet connection, cannot check for updates.{Fore.RESET}")
 
     # Get command line args
     args = sys.argv[1:]
@@ -43,6 +34,18 @@ def main():
                 """)
 
     print(title)
+
+    # Check for updates from GitHub - if this version doesn't match the latest version
+    # If there is no internet, print error but run game
+    try:
+        response = requests.get("https://api.github.com/repos/Nulfy/Pythora/releases/latest", timeout=3)
+        if response.json()["tag_name"] != v:
+            print(f"{Fore.LIGHTCYAN_EX}There is a new version available! Download it at"
+                  f"\nhttps://github.com/Nulfy/Pythora/releases/latest{Fore.RESET}")
+    except requests.ConnectionError:
+        print(f"{Fore.LIGHTCYAN_EX}No internet connection, cannot check for updates.{Fore.RESET}")
+    except requests.Timeout:
+        pass
 
     while True:
         # Check if a map was provided in CMD args, and if so, start the game with that map.

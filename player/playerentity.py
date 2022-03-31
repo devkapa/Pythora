@@ -316,8 +316,9 @@ class PlayerEntity:
                     print(
                         f"It swings back at you, dealing {enemy.get_damage()} damage to you. Your health: {self.get_health()}"
                         f"\nThe {Fore.LIGHTWHITE_EX}{enemy.get_name()}{Fore.RESET} is now on {enemy.get_health()} HP.")
-                    self.combat = True
-                    print(f"{Fore.RED}You are now in combat.{Fore.RESET}")
+                    if not self.combat:
+                        self.combat = True
+                        print(f"{Fore.RED}You are now in combat.{Fore.RESET}")
                 else:
                     dropped = []
                     enemy_inventory = [x for x in enemy.get_inventory().get_items()]

@@ -1,3 +1,4 @@
+import threading
 import time
 from difflib import SequenceMatcher
 from threading import Thread
@@ -53,17 +54,17 @@ def start_game(game_map: Map):
     # While the player is alive, keep the game running
     while player.get_health() > 0:
 
-        timer = Thread(target=combat_timer)
-        await_input = Thread(target=user_input)
-
-        timer.start()
-        await_input.start()
-
-        await_input.join()
-
         global combat_time
 
-        if combat_time >= 15:
+        timer = Thread(target=combat_timer, name="CT")
+        if not any(th.name == "CT" for th in threading.enumerate()):
+            timer.start()
+
+        await_input = Thread(target=user_input)
+        await_input.start()
+        await_input.join()
+
+        if combat_time >= 25:
             print(f"{Fore.RED}You were in combat, and took too long to fight back!{Fore.RESET}")
             combat = False
             break
@@ -198,9 +199,11 @@ def start_game(game_map: Map):
 def combat_timer():
     global combat, combat_time
     while combat:
-        start_time = time.time()
-        time.sleep(1 - (time.time() - start_time))
-        combat_time += 1
+        if combat_time <= 25:
+            combat_time += 1
+            time.sleep(1)
+        else:
+            break
     else:
         combat_time = 0
 
