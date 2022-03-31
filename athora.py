@@ -14,7 +14,7 @@ colorama.init()
 def main():
 
     # Version
-    v = "py-v2.1.2"
+    v = "py-v2.2.0"
 
     # Get command line args
     args = sys.argv[1:]
