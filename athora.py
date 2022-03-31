@@ -7,7 +7,7 @@ from movement.map import choose_map, get_map
 from colorama import Fore
 import requests
 
-# Initialise ANSI escape colour codes foor Windows
+# Initialise ANSI escape colour codes for Windows
 colorama.init()
 
 
