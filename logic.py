@@ -35,7 +35,7 @@ def start_game(game_map: Map):
 
     # If a corrupt or invalid map was provided, throw error
     if game_map is None:
-        print("Error initialising map.")
+        print(f"{Fore.LIGHTRED_EX}Error initialising map.{Fore.RESET}")
         return
     else:
         print(f"\n{Back.WHITE}{Fore.BLACK}{game_map.get_name()}{Fore.RESET}{Back.RESET}")

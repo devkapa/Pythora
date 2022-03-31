@@ -1,6 +1,7 @@
 import os
 import re
 import xml.etree.ElementTree as elementTree
+from _elementtree import ParseError
 import textwrap
 from os import listdir
 from os.path import isfile, join
@@ -100,71 +101,76 @@ class Map:
 
 # Converts an Athora Map file (.athora) to a Map object
 def get_map(path):
-    # Create an XML element tree to read the map file
-    game_map = elementTree.parse(path)
 
-    # Get the map name and splash from contents
-    root = game_map.getroot()
-    map_name = root.attrib.get("name")
-    map_splash = textwrap.dedent(root.find("splash").text)
+    try:
+        # Create an XML element tree to read the map file
+        game_map = elementTree.parse(path)
 
-    # Get player health, inventory and starting coordinates
-    player = root.find("player").attrib
-    player_coordinate = Coordinate(int(player.get("x")), int(player.get("y")), int(player.get("z")))
-    player_stats = [int(player.get("health")), Inventory([], int(player.get("inventory-slots"))), player_coordinate]
+        # Get the map name and splash from contents
+        root = game_map.getroot()
+        map_name = root.attrib.get("name")
+        map_splash = textwrap.dedent(root.find("splash").text)
 
-    # Get all scene nodes in the map
-    map_scenes = root.find("scenes").findall("scene")
-    scenes = []
+        # Get player health, inventory and starting coordinates
+        player = root.find("player").attrib
+        player_coordinate = Coordinate(int(player.get("x")), int(player.get("y")), int(player.get("z")))
+        player_stats = [int(player.get("health")), Inventory([], int(player.get("inventory-slots"))), player_coordinate]
 
-    # For every <scene> node, create a Scene object
-    for scene in map_scenes:
+        # Get all scene nodes in the map
+        map_scenes = root.find("scenes").findall("scene")
+        scenes = []
 
-        # Get the name and setting of the scene from map contents
-        scene_name = scene.attrib.get("name")
-        scene_setting = textwrap.dedent(scene.find("setting").text)
+        # For every <scene> node, create a Scene object
+        for scene in map_scenes:
 
-        scene_directions = scene.find("directions")
-        compass_directions = ["north", "east", "south", "west", "up", "down"]
-        directions_attribs = scene_directions.attrib
-        directions = []
+            # Get the name and setting of the scene from map contents
+            scene_name = scene.attrib.get("name")
+            scene_setting = textwrap.dedent(scene.find("setting").text)
 
-        scene_pwd = False if scene.attrib.get("pwd") is None else scene.attrib.get("pwd")
+            scene_directions = scene.find("directions")
+            compass_directions = ["north", "east", "south", "west", "up", "down"]
+            directions_attribs = scene_directions.attrib
+            directions = []
 
-        scene_coordinates = Coordinate(int(directions_attribs.get("x")), int(directions_attribs.get("y")),
-                                       int(directions_attribs.get("z")))
+            scene_pwd = False if scene.attrib.get("pwd") is None else scene.attrib.get("pwd")
 
-        # For each compass direction, check it's corresponding value in the map. Create a new Destination object
-        # with the coordinates of the destination scene, or the message to be sent when no destination exists.
-        for direction in compass_directions:
-            if any(x.tag == direction for x in scene_directions):
-                direction_message = scene_directions.find(direction).text
-                direction_health = scene_directions.find(direction).attrib.get("health")
-                directions.append(Destination(direction, None, textwrap.dedent(direction_message).strip(),
-                                              direction_health))
-            else:
-                direction_coordinate = coordinate_from_direction(int(directions_attribs.get("x")),
-                                                                 int(directions_attribs.get("y")),
-                                                                 int(directions_attribs.get("z")), direction)
-                directions.append(Destination(direction, direction_coordinate, None, None))
+            scene_coordinates = Coordinate(int(directions_attribs.get("x")), int(directions_attribs.get("y")),
+                                           int(directions_attribs.get("z")))
 
-        # Get all item nodes in the scene
-        scene_items = scene.find("items")
-        items = []
+            # For each compass direction, check it's corresponding value in the map. Create a new Destination object
+            # with the coordinates of the destination scene, or the message to be sent when no destination exists.
+            for direction in compass_directions:
+                if any(x.tag == direction for x in scene_directions):
+                    direction_message = scene_directions.find(direction).text
+                    direction_health = scene_directions.find(direction).attrib.get("health")
+                    directions.append(Destination(direction, None, textwrap.dedent(direction_message).strip(),
+                                                  direction_health))
+                else:
+                    direction_coordinate = coordinate_from_direction(int(directions_attribs.get("x")),
+                                                                     int(directions_attribs.get("y")),
+                                                                     int(directions_attribs.get("z")), direction)
+                    directions.append(Destination(direction, direction_coordinate, None, None))
 
-        # If the scene does contain items
-        if scene_items is not None:
+            # Get all item nodes in the scene
+            scene_items = scene.find("items")
+            items = []
 
-            scene_items = scene_items.findall("item")
+            # If the scene does contain items
+            if scene_items is not None:
 
-            for item in scene_items:
-                create_item(item, items)
+                scene_items = scene_items.findall("item")
 
-        # Add the scene to a list
-        scenes.append(Scene(scene_coordinates, scene_name, scene_setting, directions, items, scene_pwd))
+                for item in scene_items:
+                    create_item(item, items)
 
-    # Return a new Map with its name, splash, scenes and player configuration
-    return Map(map_name, map_splash, scenes, player_stats)
+            # Add the scene to a list
+            scenes.append(Scene(scene_coordinates, scene_name, scene_setting, directions, items, scene_pwd))
+
+        # Return a new Map with its name, splash, scenes and player configuration
+        return Map(map_name, map_splash, scenes, player_stats)
+    except (AttributeError, ParseError):
+        print(f"{Fore.LIGHTRED_EX}That map is not compatible with this version of Athora.{Fore.RESET}")
+        return None
 
 
 # Gives the player a list of all maps in the game folder, and returns it
@@ -189,7 +195,7 @@ def choose_map(maps_dir):
             return
 
         # Display available maps to player
-        print("Choose a map to play, or \"quit\":")
+        print("\nChoose a map to play, or \"quit\":")
 
         file_names = []
 
@@ -210,12 +216,13 @@ def choose_map(maps_dir):
         try:
             for file in files:
                 for name in file_names:
-                    names = sum([re.split(r'[^\w ]', x) for x in name.lower().split()], [])
-                    inputs = sum([re.split(r'[^\w ]', x) for x in u_input.lower().split()], [])
-                    for n in names:
-                        for i in inputs:
-                            if similar(n, i) > 0.9:
-                                return maps_dir + file
+                    if file in name:
+                        names = sum([re.split(r'[^\w ]', x) for x in name.lower().split()], [])
+                        inputs = sum([re.split(r'[^\w ]', x) for x in u_input.lower().split()], [])
+                        for n in names:
+                            for i in inputs:
+                                if similar(n, i) > 0.9:
+                                    return maps_dir + file
             print(f"{Fore.LIGHTRED_EX}That is not an option in the list of maps.{Fore.RESET}\n")
             continue
         except ValueError:
