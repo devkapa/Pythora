@@ -200,9 +200,12 @@ def choose_map(maps_dir):
         file_names = []
 
         for file in files:
-            game_map = elementTree.parse(f'{maps_dir}{file}')
-            print(f'{files.index(file)}: {game_map.getroot().attrib.get("name")} ({file})')
-            file_names.append(f'{files.index(file)}: {game_map.getroot().attrib.get("name")} ({file})')
+            try:
+                game_map = elementTree.parse(f'{maps_dir}{file}')
+                print(f'{files.index(file)}: {game_map.getroot().attrib.get("name")} ({file})')
+                file_names.append(f'{files.index(file)}: {game_map.getroot().attrib.get("name")} ({file})')
+            except ParseError:
+                pass
 
         print("> " + Fore.LIGHTGREEN_EX, end="")
         u_input = input()

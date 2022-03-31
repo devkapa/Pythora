@@ -118,11 +118,7 @@ class PlayerEntity:
 
     # Return a list of all weapons in the player's inventory
     def get_weapons(self):
-        weapons = []
-        for item in self.inventory.get_items():
-            if not isinstance(item, Food):
-                weapons.append(item)
-        return weapons
+        return [weapon for weapon in self.inventory.get_items() if not isinstance(weapon, Food)]
 
     # Get a queried Container object from the player's inventory
     def get_container(self, args):
