@@ -3,9 +3,6 @@ import time
 from difflib import SequenceMatcher
 from threading import Thread
 
-import colorama
-from colorama import Fore, Back
-
 from items.container import Container
 from items.enemy import Enemy
 from items.food import Food
@@ -16,29 +13,30 @@ from movement.coordinate import convert_direction
 from movement.map import Map
 from movement.scene import Scene
 from player.playerentity import PlayerEntity
-
-# Initialise ANSI escape colour codes for Windows
-colorama.init()
+from console.colors import white, reset, bg_white, black, red
 
 # Create map global variable
 global_map: Map
+global_console = None
 
 combat = False
 combat_time = 0
 u_input: str = ""
 
 
-def start_game(game_map: Map):
+def start_game(game_map: Map, console):
     # Set the global map to the map passed to start_game()
-    global global_map
+    global global_map, global_console
     global_map = game_map
+    global_console = console
 
     # If a corrupt or invalid map was provided, throw error
     if game_map is None:
-        print(f"{Fore.LIGHTRED_EX}Error initialising map.{Fore.RESET}")
+        print(f"Error initialising map.")
         return
     else:
-        print(f"\n{Back.WHITE}{Fore.BLACK}{game_map.get_name()}{Fore.RESET}{Back.RESET}")
+        print("")
+        console.wrap(f"{bg_white}{black}{game_map.get_name()}")
 
     # Initialise a new player with the health, inventory and starting position as defined in map file
     map_player = global_map.get_player()
@@ -47,37 +45,36 @@ def start_game(game_map: Map):
     # Print the map splash and setting of the first scene
     print(game_map.get_splash())
 
-    print(look(player))
+    console.wrap(look(player))
 
     global combat
 
     # While the player is alive, keep the game running
     while player.get_health() > 0:
 
+        console.set_map_window(global_map.print_map(player))
+
         global combat_time
 
-        timer = Thread(target=combat_timer, name="CT")
+        sec = 25
+
+        timer = Thread(target=combat_timer, args=(console, sec), name="CT")
         if not any(th.name == "CT" for th in threading.enumerate()):
             timer.start()
 
-        await_input = Thread(target=user_input)
-        await_input.start()
-        await_input.join()
+        global u_input, combat
+        u_input = console.ginput()
 
-        if combat_time >= 25:
-            print(f"{Fore.RED}You were in combat, and took too long to fight back!{Fore.RESET}")
+        if combat_time >= sec:
+            print(f"{red}You were in combat, and took too long to fight back!")
             combat = False
             break
-
-        # Reset colour of succeeding text
-        print(Fore.RESET, end="")
 
         # Convert and trim player input to lowercase, and find the directive verb in the input
         command = u_input.lower().strip()
         verb = get_verb(command, player)
 
         # If there was no directive verb, ignore input and print error.
-        # When the user exceeds 10 invalid inputs, kick them from the game.
         if verb is None:
             print(f"I don't know what you mean by \"{command}\".")
             continue
@@ -89,28 +86,28 @@ def start_game(game_map: Map):
         match verb:
             case "look":
                 # Print the setting of the player's current scene
-                print(look(player))
+                console.wrap(look(player))
             case ("north" | "east" | "south" | "west" | "up" | "down" | "forward" | "backward" | "left" | "right"):
                 if player.combat:
-                    print(f"{Fore.RED}You were in combat, and didn't fight back!{Fore.RESET}")
+                    print(f"You were in combat, and didn't fight back!")
                     break
                 # Move in the respective compass direction
-                move(verb, player)
+                move(verb, player, console)
             case ("move" | "go" | "walk"):
                 if player.combat:
-                    print(f"{Fore.RED}You were in combat, and didn't fight back!{Fore.RESET}")
+                    print(f"{red}You were in combat, and didn't fight back!")
                     break
                 # Find the compass direction the user wants to move in
                 # If it exists, move the player there
                 direction = get_verb(args, player)
                 if direction in ["north", "east", "south", "west", "up", "down",
                                  "forward", "backward", "left", "right"]:
-                    move(direction, player)
+                    move(direction, player, console)
                 else:
                     if isinstance(direction, Scene):
                         for x in player.get_current_scene().get_destinations():
                             if direction is global_map.find_scene(x.get_coordinate()):
-                                move(x.get_direction(), player)
+                                move(x.get_direction(), player, console)
                     else:
                         print("What direction do you want to move in?")
                         print("Syntax: move [north/east/south/west/up/down]")
@@ -125,18 +122,18 @@ def start_game(game_map: Map):
                     if isinstance(item, Container):
                         # If there is a container in the player's inventory, list all of it's contents
                         percent = item.get_contents().get_percent()
-                        inv += f'\n* {Fore.LIGHTWHITE_EX}{item.get_name()}{Fore.RESET} ({percent}% full)'
+                        inv += f'\n* {white}{item.get_name()}{reset} ({percent}% full)'
                         for obj in item.get_contents().get_items():
-                            inv += f'\n   - {Fore.LIGHTWHITE_EX}{obj.get_name()}{Fore.RESET}'
+                            inv += f'\n   - {white}{obj.get_name()}{reset}'
                     else:
-                        inv += f'\n* {Fore.LIGHTWHITE_EX}{item.get_name()}{Fore.RESET}'
+                        inv += f'\n* {white}{item.get_name()}{reset}'
                 # If the inventory is empty, let the player know
                 if inv == "":
                     inv = "Empty"
                     percent = 0
                 else:
                     percent = player.get_inventory().get_percent()
-                print(f'Backpack ({percent}% full): {inv}\nHealth: {player.get_health()}')
+                console.wrap(f'Backpack ({percent}% full): {inv}\nHealth: {player.get_health()}'.strip())
             case ("pickup" | "pick" | "take" | "steal"):
                 if "out" in args or "from" in args:
                     # If the player wants to take an item out of or from a container,
@@ -149,10 +146,10 @@ def start_game(game_map: Map):
                 # Drop an item from the player's inventory
                 player.drop(args)
             case "open":
-                open_container(player.get_container(args))
+                open_container(player.get_container(args), console)
             case "map":
                 # Print a stylised map of the player's surroundings
-                global_map.print_map(player)
+                console.wrap(global_map.print_map(player))
             case ("action" | "cmd" | "command" | "what" | "help"):
                 # Print a list of actions the player can do
                 print(possible_cmds(player))
@@ -187,37 +184,36 @@ def start_game(game_map: Map):
                 if isinstance(verb, Scene):
                     for x in player.get_current_scene().get_destinations():
                         if verb is global_map.find_scene(x.get_coordinate()):
-                            move(x.get_direction(), player)
+                            move(x.get_direction(), player, console)
 
         combat = True if player.combat else False
 
     # Once the player is dead (health is below or equal to 0) and
     # the while loop has ended, print the death message
-    print(deathMessage)
+    console.wrap(deathMessage, end='')
+    combat = False
+    console.set_map_window("")
 
 
-def combat_timer():
+def combat_timer(console, timer):
     global combat, combat_time
     while combat:
-        if combat_time <= 25:
+        if combat_time < timer:
             combat_time += 1
+            console.timer((timer + 1) - combat_time, True)
             time.sleep(1)
+        elif combat_time >= timer:
+            console.timer("Dead", True)
         else:
             break
     else:
+        console.timer(">", False)
         combat_time = 0
 
 
 def reset_timer():
     global combat_time
     combat_time = 0
-
-
-def user_input():
-    global u_input, combat
-    # Colourise the user input
-    print("> " + Fore.LIGHTGREEN_EX, end="")
-    u_input = input()
 
 
 # Filter through a string to check if it contains or is similar to a verb
@@ -255,9 +251,9 @@ def look(player: PlayerEntity):
         scene_objects_names = []
         for obj in scene_objects:
             scene_objects_names.append(obj.get_name())
-        items = f'There is a {Fore.LIGHTWHITE_EX}{f"{Fore.RESET}, a {Fore.LIGHTWHITE_EX}".join(scene_objects_names)}' \
-                f'{Fore.RESET} here. '
-    return f"{Fore.LIGHTWHITE_EX}{player.get_current_scene().get_name()}{Fore.RESET}" \
+        items = f'There is a {white}{f"{reset}, a {white}".join(scene_objects_names)}{reset}' \
+                f' here. '
+    return f"{white}{player.get_current_scene().get_name()}{reset}" \
            f"{player.get_current_scene().get_setting()}" \
            f"{items}" \
            f"\nType \"help\" to see what you can do."
@@ -291,7 +287,7 @@ def possible_cmds(player: PlayerEntity):
 
 
 # Move the player in a compass direction
-def move(direction, player: PlayerEntity):
+def move(direction, player: PlayerEntity, console):
     # Get the Destination object of the compass direction
     destination: Destination = player.get_current_scene().get_destination(convert_direction(direction))
 
@@ -319,14 +315,13 @@ def move(direction, player: PlayerEntity):
         print("Athora encountered a problem. The map is not configured properly.")
         return
     if scene.pin is not False:
-        print(f"{Fore.LIGHTWHITE_EX}{scene.name}{Fore.RESET} requires a passcode to enter: {Fore.GREEN}", end='')
-        pin = input()
-        print(Fore.RESET, end="")
+        print(f"{scene.name} requires a passcode to enter: ", end='')
+        pin = console.ginput()
         if pin != scene.pin:
-            print(f"{Fore.LIGHTRED_EX}That is not the right passcode.{Fore.RESET}")
+            print(f"That is not the right passcode.")
             return
     player.set_current_scene(scene)
-    print(look(player))
+    console.wrap(look(player))
     scene.pin = False
 
 
@@ -337,16 +332,16 @@ def similar(a, b):
 
 
 # The player constructor class
-def open_container(container: Container):
+def open_container(container: Container, console):
     if container is None:
         print("That container doesn't seem to exist")
         print("Syntax: open [container]")
         return
-    items = f"{Fore.RESET}\n* {Fore.LIGHTWHITE_EX}".join([item.get_name()
-                                                          for item in container.get_contents().get_items()])
-    items = f"\n* {Fore.LIGHTWHITE_EX}" + items + Fore.RESET
-    print(f'Opening the {Fore.LIGHTWHITE_EX}{container.get_name()}{Fore.RESET} reveals', end='')
-    print(f': {items}' if len([item for item in container.get_contents().get_items()]) >= 1 else " no items inside.")
+    items = f"{reset}\n* {white}".join([item.get_name()
+                                              for item in container.get_contents().get_items()])
+    items = f"{reset}\n* {white}" + items
+    console.wrap(f'Opening the {white}{container.get_name()}{reset} reveals', end='')
+    console.wrap(f': {items}' if len([item for item in container.get_contents().get_items()]) >= 1 else " no items inside.")
 
 
 # String list of verbs which can be used to make decisions and movements in the game
@@ -359,7 +354,7 @@ verbs = ["quit", "go", "take", "pick", "pickup", "drop", "move", "inventory", "i
 # The coloured message printed when the player has died/game is ended
 deathMessage = f"""
                 
-              {Fore.LIGHTRED_EX}**Poof! You have died.**
-            {Fore.RESET}Please restart to play again.
+              {red}**Poof! You have died.**{reset}
+            Please restart to play again.
             
             """

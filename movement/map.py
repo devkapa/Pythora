@@ -7,7 +7,6 @@ from os import listdir
 from os.path import isfile, join
 import webbrowser
 from difflib import SequenceMatcher
-from colorama import Fore
 
 from items.container import Container
 from items.enemy import Enemy
@@ -19,6 +18,7 @@ from movement.destination import Destination
 from movement.scene import Scene
 from player.inventory import Inventory
 from player.playerentity import PlayerEntity
+from console.colors import white, reset, pink
 
 
 class Map:
@@ -78,7 +78,25 @@ class Map:
                 # in it, and if there is a scene to the right of it
                 if self.find_scene(current_coord) is not None:
                     print_str += "[Y]" if self.find_scene(current_coord) is player.get_current_scene() else "[ ]"
-                    print_str += "-" if self.find_scene(adj_coord) is not None else " "
+                    if self.find_scene(adj_coord) is not None:
+                        if any(adj_coord == x.get_coordinate() for x in self.find_scene(current_coord).get_destinations()):
+                            current_scene = self.find_scene(current_coord).get_items()
+                            adj_scene = self.find_scene(adj_coord).get_items()
+                            current_enemies = [item for item in current_scene if isinstance(item, Enemy)]
+                            adj_enemies = [item for item in adj_scene if isinstance(item, Enemy)]
+                            for current_enemy in current_enemies:
+                                if "east" in current_enemy.get_blocking() and current_enemy.is_alive():
+                                    print_str += "×"
+                                    break
+                            for adj_enemy in adj_enemies:
+                                if "west" in adj_enemy.get_blocking() and adj_enemy.is_alive():
+                                    print_str += "×"
+                                    break
+                            print_str += "-" if print_str[-1:] != "×" else ""
+                        else:
+                            print_str += " "
+                    else:
+                        print_str += " "
                 else:
                     print_str += "    "
             print_str += "\n"
@@ -87,21 +105,54 @@ class Map:
                 current_coord = Coordinate(x, y, player.get_z())
                 adj_coord = Coordinate(x - 1, y, player.get_z())
                 print_str += " "
-                if self.find_scene(adj_coord) and self.find_scene(current_coord) is not None:
-                    print_str += "|  " if any(current_coord == x.get_coordinate() for x in
-                                              self.find_scene(adj_coord).get_destinations()) else "   "
+
+                if self.find_scene(current_coord) is not None:
+                    if self.find_scene(adj_coord) is not None:
+                        if any(current_coord == x.get_coordinate() for x in self.find_scene(adj_coord).get_destinations()):
+                            current_scene = self.find_scene(current_coord).get_items()
+                            adj_scene = self.find_scene(adj_coord).get_items()
+                            current_enemies = [item for item in current_scene if isinstance(item, Enemy)]
+                            adj_enemies = [item for item in adj_scene if isinstance(item, Enemy)]
+                            for current_enemy in current_enemies:
+                                if "south" in current_enemy.get_blocking() and current_enemy.is_alive():
+                                    print_str += "×"
+                                    break
+                            for adj_enemy in adj_enemies:
+                                if "north" in adj_enemy.get_blocking() and adj_enemy.is_alive():
+                                    print_str += "×"
+                                    break
+                            print_str += "|  " if print_str[-1:] != "×" else ""
+                        else:
+                            print_str += "   "
+                    else:
+                        print_str += "   "
                 else:
                     print_str += "   "
+
             print_str += "\n"
 
+        scene_objects = player.get_current_scene().get_items()
+
+        if len(scene_objects) < 1:
+            items = "There are no items here."
+        else:
+            scene_objects_names = []
+            for obj in scene_objects:
+                scene_objects_names.append(obj.get_name())
+            items = f'There is a {white}{f"{reset}, a {white}".join(scene_objects_names)}{reset}' \
+                    f' here. '
+
         # Print the string, removing whitespaces
-        print(print_str.strip())
-        print("\n[Y] = You")
+        print_str = print_str.strip()
+        print_str += "\n\n[Y] = You"
+        print_str += "\n× = Enemy"
+        print_str += f"\n\nYou are at the {white}{player.get_current_scene().get_name()}{reset}."
+        print_str += f"\n{items}"
+        return print_str
 
 
 # Converts an Athora Map file (.athora) to a Map object
 def get_map(path):
-
     try:
         # Create an XML element tree to read the map file
         game_map = elementTree.parse(path)
@@ -169,18 +220,18 @@ def get_map(path):
         # Return a new Map with its name, splash, scenes and player configuration
         return Map(map_name, map_splash, scenes, player_stats)
     except (AttributeError, ParseError):
-        print(f"{Fore.LIGHTRED_EX}That map is not compatible with this version of Athora.{Fore.RESET}")
+        print(f"That map is not compatible with this version of Athora.")
         return None
 
 
 # Gives the player a list of all maps in the game folder, and returns it
 # as a file path that can be passed to the get_map method.
-def choose_map(maps_dir):
+def choose_map(maps_dir, console):
     maps_dir += "/maps/"
 
     # If there is no map directory, create one
     if not os.path.isdir(maps_dir):
-        print("No maps folder was found. Creating one...")
+        print("\nNo maps folder was found. Creating one...")
         os.mkdir(maps_dir)
 
     while True:
@@ -189,13 +240,13 @@ def choose_map(maps_dir):
 
         # If there are no maps, open the maps folder
         if len(files) < 1:
-            print("The maps folder is empty. Add some maps to start playing Athora!")
+            console.wrap(f"{pink}The maps folder is empty. Add some maps to start playing Athora!")
             webbrowser.open('file:///' + os.path.realpath(maps_dir))
-            input()
+            console.ginput()
             return
 
         # Display available maps to player
-        print("\nChoose a map to play, or \"quit\":")
+        print("\nChoose a map to play, \"maps\", or \"quit\":")
 
         file_names = []
 
@@ -205,15 +256,18 @@ def choose_map(maps_dir):
                 print(f'{files.index(file)}: {game_map.getroot().attrib.get("name")} ({file})')
                 file_names.append(f'{files.index(file)}: {game_map.getroot().attrib.get("name")} ({file})')
             except ParseError:
+                print(f"Error: Could not parse \"{file}\". Invalid map.")
                 pass
 
-        print("> " + Fore.LIGHTGREEN_EX, end="")
-        u_input = input()
-        print(Fore.RESET, end="")
+        u_input = console.ginput()
 
         # If the player wishes to close the game, return a NoneType
         if similar(u_input, "quit") > 0.7:
             return None
+        if similar(u_input, "maps") > 0.7:
+            webbrowser.open('file:///' + os.path.realpath(maps_dir))
+            console.wrap(f"{pink}Opening the maps folder. ({os.path.realpath(maps_dir)})")
+            continue
 
         # If the input value is a valid integer and present in the map list, return that map's file path
         try:
@@ -226,10 +280,10 @@ def choose_map(maps_dir):
                             for i in inputs:
                                 if similar(n, i) > 0.9:
                                     return maps_dir + file
-            print(f"{Fore.LIGHTRED_EX}That is not an option in the list of maps.{Fore.RESET}\n")
+            print(f"That is not an option in the list of maps.\n")
             continue
         except ValueError:
-            print(f"{Fore.LIGHTRED_EX}Enter a valid number.{Fore.RESET}\n")
+            print(f"Enter a valid number.\n")
             continue
 
 

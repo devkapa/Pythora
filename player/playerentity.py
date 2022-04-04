@@ -5,14 +5,10 @@ from items.food import Food
 from items.readable import Readable
 from player.inventory import Inventory
 from movement.scene import Scene
+from console.colors import white, reset, red, green
 
 import re
-import colorama
-from colorama import Fore
 from difflib import SequenceMatcher
-
-# Initialise ANSI escape colour codes for Windows
-colorama.init()
 
 
 # Check how similar two strings are
@@ -43,12 +39,12 @@ def add_item(matches, iterating, container):
             if not container.get_contents().full():
                 container.get_contents().get_items().append(match)
                 iterating.remove(match)
-                print(
-                    f"You put {Fore.LIGHTWHITE_EX}{match.get_name()}{Fore.RESET} into {Fore.LIGHTWHITE_EX}{container.get_name()}{Fore.RESET}. "
+                logic.global_console.wrap(
+                    f"You put {white}{match.get_name()}{reset} into {white}{container.get_name()}{reset}. "
                     f"Now it deals {container.get_damage()} damage.")
             else:
-                print(
-                    f"The {Fore.LIGHTWHITE_EX}{container.get_name()}{Fore.RESET} is too full to fit {Fore.LIGHTWHITE_EX}{match.get_name()}{Fore.RESET}")
+                logic.global_console.wrap(
+                    f"The {white}{container.get_name()}{reset} is too full to fit {white}{match.get_name()}{reset}")
         else:
             print("You cannot put a container inside a container.")
 
@@ -61,7 +57,7 @@ def take(matches, iterating, player):
                 iterating.remove(match)
                 if match.get_take()[1] is not None:
                     print(match.get_take()[1])
-                print(f"You picked up {Fore.LIGHTWHITE_EX}{match.get_name()}{Fore.RESET}.")
+                logic.global_console.wrap(f"You picked up {white}{match.get_name()}{reset}.")
             else:
                 print("Your inventory is too full to pick that up!")
         else:
@@ -69,7 +65,7 @@ def take(matches, iterating, player):
                 player.change_health(-match.get_damage())
                 print(f'{match.get_take()[1]} -{match.get_damage()} HP')
             else:
-                print(f"You can't pick up a {Fore.LIGHTWHITE_EX}{match.get_name()}{Fore.RESET}!")
+                logic.global_console.wrap(f"You can't pick up a {white}{match.get_name()}{reset}!")
 
 
 class PlayerEntity:
@@ -175,14 +171,14 @@ class PlayerEntity:
         # Get a list of items in the container that match the player's query
         matches = get_match(args, container.get_contents().get_items())
         if len(matches) < 1:
-            print(f"That item isn't in the {Fore.LIGHTWHITE_EX}{container.get_name()}{Fore.RESET}.")
+            logic.global_console.wrap(f"That item isn't in the {white}{container.get_name()}{reset}.")
             return
         # For each item found, remove it from the container and add to inventory
         for match in matches:
             container.get_contents().get_items().remove(match)
             self.inventory.get_items().append(match)
-            print(
-                f"You took {Fore.LIGHTWHITE_EX}{match.get_name()}{Fore.RESET} out of {Fore.LIGHTWHITE_EX}{container.get_name()}{Fore.RESET}. "
+            logic.global_console.wrap(
+                f"You took {white}{match.get_name()}{reset} out of {white}{container.get_name()}{reset}. "
                 f"Now it deals {container.get_damage()} damage.")
 
     # Pick up an item in the player's scene
@@ -226,14 +222,15 @@ class PlayerEntity:
             for match in inv_matches:
                 self.inventory.get_items().remove(match)
                 self.get_current_scene().get_items().append(match)
-                print(f"Dropped {Fore.LIGHTWHITE_EX}{match.get_name()}{Fore.RESET}.")
+                logic.global_console.wrap(f"Dropped {white}{match.get_name()}{reset}.")
         elif len(inv_container_matches) > 0:
             for container in get_containers(self.get_inventory().get_items()):
                 for match in inv_container_matches:
                     if match in container.get_contents().get_items():
                         container.get_contents().get_items().remove(match)
                         self.get_current_scene().get_items().append(match)
-                        print(f"Dropped {Fore.LIGHTWHITE_EX}{match.get_name()}{Fore.RESET} from {Fore.LIGHTWHITE_EX}{container.get_name()}{Fore.RESET}.")
+                        logic.global_console.wrap(
+                            f"Dropped {white}{match.get_name()}{reset} from {white}{container.get_name()}{reset}.")
         else:
             print(f"Theres no \"{args}\" here.")
             return
@@ -258,11 +255,11 @@ class PlayerEntity:
                 self.inventory.get_items().remove(match)
                 if match.get_take()[1] is not None:
                     print(match.get_take()[1])
-                print(
-                    f"You ate {Fore.LIGHTWHITE_EX}{match.get_name()}{Fore.RESET}, and gained {match.get_saturation()} HP."
+                logic.global_console.wrap(
+                    f"You ate {white}{match.get_name()}{reset}, and gained {match.get_saturation()} HP."
                     f"\nYou are now on {self.health} HP.")
             else:
-                print(f"You cannot eat a {Fore.LIGHTWHITE_EX}{match.get_name()}{Fore.RESET}!")
+                logic.global_console.wrap(f"You cannot eat a {white}{match.get_name()}{reset}!")
 
     # Read an item in the player's inventory
     def read(self, args):
@@ -279,10 +276,10 @@ class PlayerEntity:
         # For each match in the inventory, read its text
         for match in matches:
             if match.get_take()[0] == "true" and isinstance(match, Readable):
-                print(f"The {Fore.LIGHTWHITE_EX}{match.get_name()}{Fore.RESET} reads:"
+                logic.global_console.wrap(f"The {white}{match.get_name()}{reset} reads:"
                       f"\n{match.text}")
             else:
-                print(f"You cannot read that {Fore.LIGHTWHITE_EX}{match.get_name()}{Fore.RESET}!")
+                logic.global_console.wrap(f"You cannot read that {white}{match.get_name()}{reset}!")
 
     # Swing a weapon at an enemy, dealing it damage
     def swing(self, args, enemy: Enemy):
@@ -305,16 +302,16 @@ class PlayerEntity:
             if enemy.is_alive():
                 enemy.change_health(-match.get_damage())
                 logic.reset_timer()
-                print(
-                    f"You attacked the {Fore.LIGHTWHITE_EX}{enemy.get_name()}{Fore.RESET} with a {Fore.LIGHTWHITE_EX}{match.get_name()}{Fore.RESET} for {match.get_damage()} damage.")
+                logic.global_console.wrap(
+                    f"You attacked the {white}{enemy.get_name()}{reset} with a {white}{match.get_name()}{reset} for {match.get_damage()} damage.")
                 if enemy.is_alive():
                     self.change_health(-enemy.get_damage())
-                    print(
+                    logic.global_console.wrap(
                         f"It swings back at you, dealing {enemy.get_damage()} damage to you. Your health: {self.get_health()}"
-                        f"\nThe {Fore.LIGHTWHITE_EX}{enemy.get_name()}{Fore.RESET} is now on {enemy.get_health()} HP.")
+                        f"\nThe {white}{enemy.get_name()}{reset} is now on {enemy.get_health()} HP.")
                     if not self.combat:
                         self.combat = True
-                        print(f"{Fore.RED}You are now in combat.{Fore.RESET}")
+                        logic.global_console.wrap(f"{red}You are now in combat.")
                 else:
                     dropped = []
                     enemy_inventory = [x for x in enemy.get_inventory().get_items()]
@@ -323,13 +320,13 @@ class PlayerEntity:
                             self.get_current_scene().get_items().append(item)
                             enemy.get_inventory().get_items().remove(item)
                             dropped.append(item.get_name())
-                    print(f"The {Fore.LIGHTWHITE_EX}{enemy.get_name()}{Fore.RESET} is now dead.")
+                    logic.global_console.wrap(f"The {white}{enemy.get_name()}{reset} is now dead.")
                     print(
-                        f'It dropped a {Fore.LIGHTWHITE_EX}{f"{Fore.RESET}, a {Fore.LIGHTWHITE_EX}".join(dropped)}{Fore.RESET}.') if len(
+                        f'It dropped a {f", a ".join(dropped)}.') if len(
                         dropped) > 0 else print("", end='')
                     enemy.set_name(f"Dead {enemy.get_name()}")
                     if self.combat:
-                        print(f"{Fore.GREEN}You are no longer in combat.{Fore.RESET}")
+                        logic.global_console.wrap(f"{green}You are no longer in combat.")
                     self.combat = False
             else:
-                print(f"That {Fore.LIGHTWHITE_EX}{enemy.get_name()}{Fore.RESET} is already dead.")
+                logic.global_console.wrap(f"That {white}{enemy.get_name()}{reset} is already dead.")
