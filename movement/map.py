@@ -8,6 +8,7 @@ from os.path import isfile, join
 import webbrowser
 from difflib import SequenceMatcher
 
+import logic
 from items.container import Container
 from items.enemy import Enemy
 from items.food import Food
@@ -18,7 +19,7 @@ from movement.destination import Destination
 from movement.scene import Scene
 from player.inventory import Inventory
 from player.playerentity import PlayerEntity
-from console.colors import white, reset, pink
+from console.colors import white, reset, pink, red
 
 
 class Map:
@@ -131,23 +132,12 @@ class Map:
 
             print_str += "\n"
 
-        scene_objects = player.get_current_scene().get_items()
-
-        if len(scene_objects) < 1:
-            items = "There are no items here."
-        else:
-            scene_objects_names = []
-            for obj in scene_objects:
-                scene_objects_names.append(obj.get_name())
-            items = f'There is a {white}{f"{reset}, a {white}".join(scene_objects_names)}{reset}' \
-                    f' here. '
-
         # Print the string, removing whitespaces
         print_str = print_str.strip()
         print_str += "\n\n[Y] = You"
         print_str += "\n× = Enemy"
         print_str += f"\n\nYou are at the {white}{player.get_current_scene().get_name()}{reset}."
-        print_str += f"\n{items}"
+        print_str += f"\n{logic.format_items(player)}"
         return print_str
 
 
@@ -246,7 +236,7 @@ def choose_map(maps_dir, console):
             return
 
         # Display available maps to player
-        print("\nChoose a map to play, \"maps\", or \"quit\":")
+        console.wrap(f"\n{white}Choose a map to play, \"maps\", or \"quit\":")
 
         file_names = []
 
@@ -270,21 +260,18 @@ def choose_map(maps_dir, console):
             continue
 
         # If the input value is a valid integer and present in the map list, return that map's file path
-        try:
-            for file in files:
-                for name in file_names:
-                    if file in name:
-                        names = sum([re.split(r'[^\w ]', x) for x in name.lower().split()], [])
-                        inputs = sum([re.split(r'[^\w ]', x) for x in u_input.lower().split()], [])
-                        for n in names:
-                            for i in inputs:
-                                if similar(n, i) > 0.9:
-                                    return maps_dir + file
-            print(f"That is not an option in the list of maps.\n")
-            continue
-        except ValueError:
-            print(f"Enter a valid number.\n")
-            continue
+
+        for file in files:
+            for name in file_names:
+                if file in name:
+                    names = sum([re.split(r'[^\w ]', x) for x in name.lower().split()], [])
+                    inputs = sum([re.split(r'[^\w ]', x) for x in u_input.lower().split()], [])
+                    for n in names:
+                        for i in inputs:
+                            if similar(n, i) > 0.9:
+                                return maps_dir + file
+        console.wrap(f"{red}That is not an option in the list of maps.\n")
+        continue
 
 
 def similar(a, b):

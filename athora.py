@@ -4,7 +4,7 @@ import textwrap
 import logic
 
 from console.console import Console
-from console.colors import yellow, aqua
+from console.colors import blue
 from movement.map import choose_map, get_map
 import requests
 import pyi_splash
@@ -12,7 +12,7 @@ import pyi_splash
 
 def main():
     # Version
-    v = "GUI-v3.0.1"
+    v = "GUI-v3.0.2"
 
     # Get command line args
     args = sys.argv[1:]
@@ -28,7 +28,7 @@ def main():
                    d88P  888 888    888 "88b d88""88b 888P"      "88b
                   d88P   888 888    888  888 888  888 888    .d888888
                  d8888888888 Y88b.  888  888 Y88..88P 888    888  888
-                d88P     888  "Y888 888  888  "Y88P"  888    "Y888888  {yellow}{v}
+                d88P     888  "Y888 888  888  "Y88P"  888    "Y888888  {blue}{v}
                 """)
 
     console = Console(f"Athora {v}")
@@ -42,10 +42,10 @@ def main():
     try:
         response = requests.get("https://api.github.com/repos/Nulfy/Pythora/releases/latest", timeout=3)
         if response.json()["tag_name"] != v:
-            console.wrap(f"{aqua}There is a new version available! Download it at"
+            console.wrap(f"{blue}There is a new version available! Download it at"
                          f"\nhttps://github.com/Nulfy/Pythora/releases/latest")
     except requests.ConnectionError:
-        console.wrap(f"{aqua}No internet connection, cannot check for updates.")
+        console.wrap(f"{blue}No internet connection, cannot check for updates.")
     except requests.Timeout:
         pass
 

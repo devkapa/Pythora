@@ -66,7 +66,7 @@ def start_game(game_map: Map, console):
         u_input = console.ginput()
 
         if combat_time >= sec:
-            print(f"{red}You were in combat, and took too long to fight back!")
+            console.wrap(f"{red}You were in combat, and took too long to fight back!")
             combat = False
             break
 
@@ -89,13 +89,13 @@ def start_game(game_map: Map, console):
                 console.wrap(look(player))
             case ("north" | "east" | "south" | "west" | "up" | "down" | "forward" | "backward" | "left" | "right"):
                 if player.combat:
-                    print(f"You were in combat, and didn't fight back!")
+                    console.wrap(f"{red}You were in combat, and didn't fight back!")
                     break
                 # Move in the respective compass direction
                 move(verb, player, console)
             case ("move" | "go" | "walk"):
                 if player.combat:
-                    print(f"{red}You were in combat, and didn't fight back!")
+                    console.wrap(f"{red}You were in combat, and didn't fight back!")
                     break
                 # Find the compass direction the user wants to move in
                 # If it exists, move the player there
@@ -241,22 +241,25 @@ def get_scene_names(player: PlayerEntity):
 
 # Returns a string, containing the name, setting and items of the scene the player is in
 def look(player: PlayerEntity):
+    return f"{white}{player.get_current_scene().get_name()}{reset}" \
+           f"{player.get_current_scene().get_setting()}" \
+           f"{format_items(player)}" \
+           f"\nType \"help\" to see what you can do."
+
+
+def format_items(player):
     # Get all objects in the player's current scene
     scene_objects = player.get_current_scene().get_items()
     # For each object in the scene, separate them with a comma
     # and print the setting with items included
     if len(scene_objects) < 1:
-        items = "There are no items here."
+        return "There are no items here."
     else:
         scene_objects_names = []
         for obj in scene_objects:
             scene_objects_names.append(obj.get_name())
-        items = f'There is a {white}{f"{reset}, a {white}".join(scene_objects_names)}{reset}' \
-                f' here. '
-    return f"{white}{player.get_current_scene().get_name()}{reset}" \
-           f"{player.get_current_scene().get_setting()}" \
-           f"{items}" \
-           f"\nType \"help\" to see what you can do."
+        return f'There is a {white}{f"{reset}, a {white}".join(scene_objects_names)}{reset}' \
+               f' here. '
 
 
 # Return all possible commands the player can run

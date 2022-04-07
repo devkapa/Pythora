@@ -4,7 +4,7 @@
 <map name="The Wrath of Felon">
 
     <!-- The player's starting health, inventory size and coordinate position -->
-    <player health="10" inventory-slots="5" x="0" y="0" z="0"/>
+    <player health="900" inventory-slots="5" x="0" y="0" z="0"/>
 
     <!-- The message to be displayed when the map is loaded -->
     <splash>

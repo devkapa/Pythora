@@ -55,7 +55,7 @@ class Console:
     def timer(self, args, combat):
         if combat:
             self.window['timer'].update(args, text_color='red')
-            self.window['timer'].set_size((5, 1))
+            self.window['timer'].set_size((len(str(args)) + 1, 1))
         else:
             self.window['timer'].update(">", text_color='white')
             self.window['timer'].set_size((2, 1))
